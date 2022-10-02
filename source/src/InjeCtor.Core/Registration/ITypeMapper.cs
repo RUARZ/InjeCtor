@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 
 namespace InjeCtor.Core.Registration
@@ -12,9 +13,35 @@ namespace InjeCtor.Core.Registration
         /// <summary>
         /// Add's a new mapping for <typeparamref name="T"/>.
         /// </summary>
-        /// <typeparam name="T">The type which should be registered to the mapper.</typeparam>
+        /// <typeparam name="T">The type which should be mapped.</typeparam>
         /// <returns>A <see cref="ITypeMapping{TDef}"/> instance for further configuration.</returns>
         ITypeMapping<T> Add<T>();
+    }
+
+    /// <summary>
+    /// Interface for a dynamic type mapper which allows to add type mappings and try to resolve them later.
+    /// </summary>
+    public interface IDynamicTypeMapper
+    {
+        /// <summary>
+        /// Add's a new mapping for <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The type which should be mapped.</typeparam>
+        /// <returns>A <see cref="IDynamicTypeMapping{TDef}"/> instance for further configuration.</returns>
+        IDynamicTypeMapping<T> Add<T>();
+
+        /// <summary>
+        /// Tries to resolve all mappings which does not have a mapped type set yet.
+        /// </summary>
+        /// <returns><see langword="True"/> if all matched type was found, otherwise <see langword="false"/>.</returns>
+        bool Resolve();
+
+        /// <summary>
+        /// Tries to resolve all mappings which does not have a mapped type set yet.
+        /// </summary>
+        /// <param name="assembly">The <see cref="Assembly"/>s to search a suitable mapped type.</param>
+        /// <returns><see langword="True"/> if all matched type was found, otherwise <see langword="false"/>.</returns>
+        bool Resolve(params Assembly[] assemblies);
     }
 
     /// <summary>
@@ -74,5 +101,38 @@ namespace InjeCtor.Core.Registration
         /// </summary>
         /// <typeparam name="T">The type which should be used.</typeparam>
         void As<T>() where T : TDef;
+    }
+
+    /// <summary>
+    /// Interface to allow setting a type mapping with a specific method.
+    /// </summary>
+    internal interface IMappedTypeSetableTypeMapping
+    {
+        /// <summary>
+        /// Set's the mapped type to <paramref name="type"/>.
+        /// </summary>
+        /// <param name="type">The type which should be used as mapped type.</param>
+        void SetMappedType(Type type);
+    }
+
+    /// <summary>
+    /// Type mapping with suppord of searching for implementations with try resolving the type in assemblies.
+    /// But it's also supported to directly set a mapped type.
+    /// </summary>
+    /// <typeparam name="TDef">The type for which the mapping should get a mapped type.</typeparam>
+    public interface IDynamicTypeMapping<TDef> : ITypeMapping<TDef>
+    {
+        /// <summary>
+        /// Tries to resolve a mapped type for the source type in the app domain.
+        /// </summary>
+        /// <returns><see langword="True"/> if a matched type was found, otherwise <see langword="false"/>.</returns>
+        bool Resolve();
+
+        /// <summary>
+        /// Tries to resolve a mapped type for the source type in the passed <paramref name="assembly"/>.
+        /// </summary>
+        /// <param name="assembly">The <see cref="Assembly"/>s to search a suitable mapped type.</param>
+        /// <returns><see langword="True"/> if a matched type was found, otherwise <see langword="false"/>.</returns>
+        bool Resolve(params Assembly[] assemblies);
     }
 }

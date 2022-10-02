@@ -27,7 +27,7 @@ namespace InjeCtor.Core.Registration
         public Type SourceType { get; }
 
         /// <inheritdoc/>
-        public Type? MappedType { get; private set; }
+        public Type? MappedType { get; protected set; }
 
         /// <inheritdoc/>
         public void As<T1>() where T1 : T
@@ -37,7 +37,7 @@ namespace InjeCtor.Core.Registration
 
             MappedType = typeof(T1);
 
-            MappingChanged?.Invoke(this, EventArgs.Empty);
+            RaiseMappingChanged();
         }
 
         #endregion
@@ -46,6 +46,18 @@ namespace InjeCtor.Core.Registration
 
         /// <inheritdoc/>
         public event EventHandler? MappingChanged;
+
+        #endregion
+
+        #region Protected Methods
+
+        /// <summary>
+        /// Raises the <see cref="MappingChanged"/> event.
+        /// </summary>
+        protected void RaiseMappingChanged()
+        {
+            MappingChanged?.Invoke(this, EventArgs.Empty);
+        }
 
         #endregion
     }

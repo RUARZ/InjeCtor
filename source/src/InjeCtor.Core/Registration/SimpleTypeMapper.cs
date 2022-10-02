@@ -12,7 +12,7 @@ namespace InjeCtor.Core.Registration
     {
         #region Private Fields
 
-        private readonly ConcurrentDictionary<Type, ITypeMapping> mMappings = new ConcurrentDictionary<Type, ITypeMapping>();
+        private readonly TypeMappingList mMappingList = new TypeMappingList();
 
         #endregion
 
@@ -21,41 +21,19 @@ namespace InjeCtor.Core.Registration
         /// <inheritdoc/>
         public ITypeMapping<T> Add<T>()
         {
-            if (mMappings.ContainsKey(typeof(T)))
-                throw new InvalidOperationException($"The type '{typeof(T).Name}' was alread added!");
-
-            TypeMapping<T> item = new TypeMapping<T>();
-            item.MappingChanged += Item_TypeMappingChanged;
-
-            return item;
+            return mMappingList.Add(new TypeMapping<T>());
         }
 
         /// <inheritdoc/>
         public IReadOnlyList<ITypeMapping> GetTypeMappings()
         {
-            return mMappings.Values.ToList().AsReadOnly();
+            return mMappingList.GetFinishedTypeMappings().ToList().AsReadOnly();
         }
 
         /// <inheritdoc/>
         public ITypeMapping? GetTypeMapping<T>()
         {
-            if (mMappings.TryGetValue(typeof(T), out ITypeMapping regItem))
-                return regItem;
-
-            return null;
-        }
-
-        #endregion
-
-        #region Event Handling
-
-        private void Item_TypeMappingChanged(object sender, EventArgs e)
-        {
-            if (!(sender is INotifyOnMappingChangedTypeMapping mapping))
-                return;
-
-            mMappings.TryAdd(mapping.SourceType, mapping);
-            mapping.MappingChanged -= Item_TypeMappingChanged;
+            return mMappingList.GetMapping<T>();
         }
 
         #endregion
