@@ -10,7 +10,7 @@ namespace InjeCtor.Core.TypeInformation
     {
         #region Private Fields
 
-        private readonly ConcurrentDictionary<Type, List<PropertyInfo>> mPropertiesToInject = new ConcurrentDictionary<Type, List<PropertyInfo>>();
+        private readonly ConcurrentDictionary<Type, HashSet<PropertyInfo>> mPropertiesToInject = new ConcurrentDictionary<Type, HashSet<PropertyInfo>>();
 
         #endregion
 
@@ -27,13 +27,13 @@ namespace InjeCtor.Core.TypeInformation
 
         public void AddPropertyInfoForType(Type type, PropertyInfo pInfo)
         {
-            if (!mPropertiesToInject.TryGetValue(type, out List<PropertyInfo>? list))
+            if (!mPropertiesToInject.TryGetValue(type, out HashSet<PropertyInfo>? set))
             {
-                list = new List<PropertyInfo>();
-                mPropertiesToInject.TryAdd(type, list);
+                set = new HashSet<PropertyInfo>();
+                mPropertiesToInject.TryAdd(type, set);
             }
 
-            list.Add(pInfo);
+            set.Add(pInfo);
         }
 
         #endregion
@@ -45,7 +45,7 @@ namespace InjeCtor.Core.TypeInformation
 
         /// <inheritdoc/>
         public IReadOnlyDictionary<Type, IReadOnlyList<PropertyInfo>> PropertiesToInject => 
-            mPropertiesToInject.ToDictionary(k => k.Key, v => (IReadOnlyList<PropertyInfo>)v.Value.AsReadOnly());
+            mPropertiesToInject.ToDictionary(k => k.Key, v => (IReadOnlyList<PropertyInfo>)v.Value.ToList().AsReadOnly());
 
         #endregion
     }

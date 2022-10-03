@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 
@@ -35,14 +36,21 @@ namespace InjeCtor.Core.TypeInformation
         /// Add's information for the passed <typeparamref name="T"/>.
         /// </summary>
         /// <typeparam name="T">The type for which informations should be added.</typeparam>
-        /// <returns><see langword="True"/> on success, otherwise <see langword="false"/>.</returns>
-        bool Add<T>();
+        void Add<T>();
 
         /// <summary>
         /// Add's information for the passed <paramref name="type"/>.
         /// </summary>
-        /// <returns><see langword="True"/> on success, otherwise <see langword="false"/>.</returns>
-        bool Add(Type type);
+        void Add(Type type);
+
+        /// <summary>
+        /// Add's a property injection info for the type <typeparamref name="T"/> based on the passed expression <paramref name="expression"/>.
+        /// </summary>
+        /// <typeparam name="T">The type for which a property should be injected.</typeparam>
+        /// <typeparam name="TProperty">The type of the property to be injected.</typeparam>
+        /// <param name="expression">The expression to dertermine the property to inject.</param>
+        /// <returns><see langword="True"/> if the <paramref name="expression"/> expression could be evaluated and the info could be created / appended, otherwise <see langword="false"/>.</returns>
+        bool AddPropertyInjection<T, TProperty>(Expression<Func<T, TProperty>> expression);
     }
 
     /// <summary>

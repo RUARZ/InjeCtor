@@ -1,6 +1,8 @@
 ﻿using InjeCtor.Core.Attribute;
+using InjeCtor.Core.Expression;
 using System;
 using System.Collections.Concurrent;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace InjeCtor.Core.TypeInformation
@@ -19,19 +21,29 @@ namespace InjeCtor.Core.TypeInformation
         #region ITypeInformationBuilder
 
         /// <inheritdoc/>
-        public bool Add<T>()
+        public void Add<T>()
         {
-            return Add(typeof(T));
+            Add(typeof(T));
         }
 
         /// <inheritdoc/>
-        public bool Add(Type type)
+        public void Add(Type type)
         {
-            if (mTypeInformations.ContainsKey(type))
+            TypeInformation info = GetTypeInformation(type);
+            AddInjectPropertyInfos(info);
+        }
+
+        /// <inheritdoc/>
+        public bool AddPropertyInjection<T, TProperty>(Expression<Func<T, TProperty>> expression)
+        {
+            PropertyInfo? pInfo = ExpressionParser.GetPropertyInfo(expression);
+            if (pInfo is null)
                 return false;
 
-            mTypeInformations.TryAdd(type, CreateTypeInformation(type));
+            Type type = typeof(T);
+            TypeInformation info = GetTypeInformation(type);
 
+            info.AddPropertyInfoForType(pInfo.PropertyType, pInfo);
             return true;
         }
 
@@ -56,14 +68,7 @@ namespace InjeCtor.Core.TypeInformation
 
         #endregion
 
-        #region Private Methods
-
-        private ITypeInformation CreateTypeInformation(Type type)
-        {
-            TypeInformation info = new TypeInformation(type);
-            AddInjectPropertyInfos(info);
-            return info;
-        }
+        #region Private 
 
         private void AddInjectPropertyInfos(TypeInformation info)
         {
@@ -75,6 +80,19 @@ namespace InjeCtor.Core.TypeInformation
                 info.AddPropertyInfoForType(pInfo.PropertyType, pInfo);
             }
         }
+
+        private TypeInformation GetTypeInformation(Type type)
+        {
+            if (!mTypeInformations.TryGetValue(type, out ITypeInformation typeInformation))
+            {
+                typeInformation = new TypeInformation(type);
+                mTypeInformations.TryAdd(type, typeInformation);
+            }
+
+            return (TypeInformation)typeInformation;
+        }
+
+        
 
         #endregion
     }

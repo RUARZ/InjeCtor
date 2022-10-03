@@ -103,6 +103,66 @@ namespace InjeCtor.Core.Test.TypeInformation
             Assert.AreEqual(1, info.PropertiesToInject[typeof(string)].Count(x => x.Name == nameof(MultipleInjectSamePropertyTypes.Inject5)));
         }
 
+        [Test]
+        public void AddPropertyInjection_WithExpression_Valid()
+        {
+            mBuilder.AddPropertyInjection((SingleInjectProperty obj) => obj.Inject);
+
+            ITypeInformation? info = mBuilder.Get<SingleInjectProperty>();
+
+            Assert.IsNotNull(info);
+            Assert.AreEqual(1, info.PropertiesToInject.Count);
+            Assert.IsTrue(info.PropertiesToInject.ContainsKey(typeof(bool)));
+            Assert.AreEqual(1, info.PropertiesToInject[typeof(bool)].Count);
+            Assert.AreEqual(1, info.PropertiesToInject[typeof(bool)].Count(x => x.Name == nameof(SingleInjectProperty.Inject)));
+        }
+
+        [Test]
+        public void AddPropertyInjection_ToSamePropertyAsPreviouslyAddedWithTypeAdd_Valid()
+        {
+            mBuilder.Add<SingleInjectProperty>();
+            mBuilder.AddPropertyInjection((SingleInjectProperty obj) => obj.Inject);
+
+            ITypeInformation? info = mBuilder.Get<SingleInjectProperty>();
+
+            Assert.IsNotNull(info);
+            Assert.AreEqual(1, info.PropertiesToInject.Count);
+            Assert.IsTrue(info.PropertiesToInject.ContainsKey(typeof(bool)));
+            Assert.AreEqual(1, info.PropertiesToInject[typeof(bool)].Count);
+            Assert.AreEqual(1, info.PropertiesToInject[typeof(bool)].Count(x => x.Name == nameof(SingleInjectProperty.Inject)));
+        }
+
+        [Test]
+        public void AddTypeAfterAddPropertyInjectionToSameProperty_Valid()
+        {
+            mBuilder.AddPropertyInjection((SingleInjectProperty obj) => obj.Inject);
+            mBuilder.Add<SingleInjectProperty>();
+
+            ITypeInformation? info = mBuilder.Get<SingleInjectProperty>();
+
+            Assert.IsNotNull(info);
+            Assert.AreEqual(1, info.PropertiesToInject.Count);
+            Assert.IsTrue(info.PropertiesToInject.ContainsKey(typeof(bool)));
+            Assert.AreEqual(1, info.PropertiesToInject[typeof(bool)].Count);
+            Assert.AreEqual(1, info.PropertiesToInject[typeof(bool)].Count(x => x.Name == nameof(SingleInjectProperty.Inject)));
+        }
+
+        [Test]
+        public void AddDifferentPropertyInjection_AfterPreviouslyAddedType_Valid()
+        {
+            mBuilder.Add<SingleInjectProperty>();
+            mBuilder.AddPropertyInjection((SingleInjectProperty obj) => obj.NoInject);
+
+            ITypeInformation? info = mBuilder.Get<SingleInjectProperty>();
+
+            Assert.IsNotNull(info);
+            Assert.AreEqual(1, info.PropertiesToInject.Count);
+            Assert.IsTrue(info.PropertiesToInject.ContainsKey(typeof(bool)));
+            Assert.AreEqual(2, info.PropertiesToInject[typeof(bool)].Count);
+            Assert.AreEqual(1, info.PropertiesToInject[typeof(bool)].Count(x => x.Name == nameof(SingleInjectProperty.Inject)));
+            Assert.AreEqual(1, info.PropertiesToInject[typeof(bool)].Count(x => x.Name == nameof(SingleInjectProperty.NoInject)));
+        }
+
         #endregion
     }
 }
