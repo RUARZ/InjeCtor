@@ -57,6 +57,7 @@ namespace InjeCtor.Core.Test.Registration
             ITypeMapping? mapping = mTypeMapper.GetTypeMapping<ICalculator>();
             Assert.IsNotNull(mapping);
             Assert.AreEqual(typeof(Calculator), mapping.MappedType);
+            Assert.AreEqual(CreationInstruction.Always, mapping.CreationInstruction);
         }
 
         [Test]
@@ -67,6 +68,39 @@ namespace InjeCtor.Core.Test.Registration
             ITypeMapping? mapping = mTypeMapper.GetTypeMapping<ICalculator>();
             Assert.IsNotNull(mapping);
             Assert.AreEqual(typeof(Calculator), mapping.MappedType);
+            Assert.AreEqual(CreationInstruction.Always, mapping.CreationInstruction);
+        }
+
+        [Test]
+        public void AddMappingsAndSetCreationInstructions_Successfull()
+        {
+            mTypeMapper.Add<ICalculator>().AsScopeSingleton();
+            mTypeMapper.Add<IGreeter>().AsSingleton();
+            mTypeMapper.Resolve();
+
+            IReadOnlyList<ITypeMapping>? mappings = mTypeMapper.GetTypeMappings();
+            Assert.IsNotNull(mappings);
+            Assert.AreEqual(2, mappings.Count);
+            Assert.AreEqual(typeof(Calculator), mappings[0].MappedType);
+            Assert.AreEqual(CreationInstruction.Scope, mappings[0].CreationInstruction);
+            Assert.AreEqual(typeof(Greeter), mappings[1].MappedType);
+            Assert.AreEqual(CreationInstruction.Singleton, mappings[1].CreationInstruction);
+        }
+
+        [Test]
+        public void AddDirectMappingsAndSetCreationInstructions_Successfull()
+        {
+            mTypeMapper.Add<ICalculator>().As<Calculator>().AsScopeSingleton();
+            mTypeMapper.Add<IGreeter>().As<Greeter>().AsSingleton();
+            mTypeMapper.Resolve();
+
+            IReadOnlyList<ITypeMapping>? mappings = mTypeMapper.GetTypeMappings();
+            Assert.IsNotNull(mappings);
+            Assert.AreEqual(2, mappings.Count);
+            Assert.AreEqual(typeof(Calculator), mappings[0].MappedType);
+            Assert.AreEqual(CreationInstruction.Scope, mappings[0].CreationInstruction);
+            Assert.AreEqual(typeof(Greeter), mappings[1].MappedType);
+            Assert.AreEqual(CreationInstruction.Singleton, mappings[1].CreationInstruction);
         }
 
         [Test]
@@ -84,6 +118,7 @@ namespace InjeCtor.Core.Test.Registration
             ITypeMapping? mapping = mTypeMapper.GetTypeMapping<ICalculator>();
             Assert.IsNotNull(mapping);
             Assert.AreNotEqual(typeof(Calculator), mapping.MappedType);
+            Assert.AreEqual(CreationInstruction.Always, mapping.CreationInstruction);
 
             Assert.IsTrue(mapping.MappedType.Assembly.FullName.Contains(ASSEMBLY_TO_LOAD_NAME));
         }

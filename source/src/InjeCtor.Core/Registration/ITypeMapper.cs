@@ -78,6 +78,11 @@ namespace InjeCtor.Core.Registration
         /// The Type which should be used / created ... for <see cref="SourceType"/>.
         /// </summary>
         Type? MappedType { get; }
+
+        /// <summary>
+        /// The set <see cref="CreationInstruction"/>.
+        /// </summary>
+        CreationInstruction CreationInstruction { get; }
     }
 
     /// <summary>
@@ -100,7 +105,26 @@ namespace InjeCtor.Core.Registration
         /// Set's the type which should be used for the mapping as mapped type.
         /// </summary>
         /// <typeparam name="T">The type which should be used.</typeparam>
-        void As<T>() where T : TDef;
+        /// <returns>Own instance for further processing.</returns>
+        ITypeMapping<TDef> As<T>() where T : TDef;
+
+        /// <summary>
+        /// Set's the <see cref="CreationInstruction"/> to <see cref="CreationInstruction.Singleton"/>;
+        /// </summary>
+        /// <returns>Own instance for further processing.</returns>
+        ITypeMapping<TDef> AsSingleton();
+
+        /// <summary>
+        /// Set's the <see cref="CreationInstruction"/> to <see cref="CreationInstruction.Scope"/>;
+        /// </summary>
+        /// <returns>Own instance for further processing.</returns>
+        ITypeMapping<TDef> AsScopeSingleton();
+
+        /// <summary>
+        /// Set's the <see cref="CreationInstruction"/> to <see cref="CreationInstruction.Always"/>;
+        /// </summary>
+        /// <returns>Own instance for further processing.</returns>
+        ITypeMapping<TDef> AsTransient();
     }
 
     /// <summary>
@@ -134,5 +158,30 @@ namespace InjeCtor.Core.Registration
         /// <param name="assembly">The <see cref="Assembly"/>s to search a suitable mapped type.</param>
         /// <returns><see langword="True"/> if a matched type was found, otherwise <see langword="false"/>.</returns>
         bool Resolve(params Assembly[] assemblies);
+
+        /// <summary>
+        /// Set's the type which should be used for the mapping as mapped type.
+        /// </summary>
+        /// <typeparam name="T">The type which should be used.</typeparam>
+        /// <returns>Own instance for further processing.</returns>
+        new IDynamicTypeMapping<TDef> As<T>() where T : TDef;
+
+        /// <summary>
+        /// Set's the <see cref="CreationInstruction"/> to <see cref="CreationInstruction.Singleton"/>;
+        /// </summary>
+        /// <returns>Own instance for further processing.</returns>
+        new IDynamicTypeMapping<TDef> AsSingleton();
+
+        /// <summary>
+        /// Set's the <see cref="CreationInstruction"/> to <see cref="CreationInstruction.Scope"/>;
+        /// </summary>
+        /// <returns>Own instance for further processing.</returns>
+        new IDynamicTypeMapping<TDef> AsScopeSingleton();
+
+        /// <summary>
+        /// Set's the <see cref="CreationInstruction"/> to <see cref="CreationInstruction.Always"/>;
+        /// </summary>
+        /// <returns>Own instance for further processing.</returns>
+        new IDynamicTypeMapping<TDef> AsTransient();
     }
 }

@@ -17,6 +17,7 @@ namespace InjeCtor.Core.Registration
         public TypeMapping()
         {
             SourceType = typeof(T);
+            CreationInstruction = CreationInstruction.Always;
         }
 
         #endregion
@@ -30,7 +31,10 @@ namespace InjeCtor.Core.Registration
         public Type? MappedType { get; protected set; }
 
         /// <inheritdoc/>
-        public void As<T1>() where T1 : T
+        public CreationInstruction CreationInstruction { get; protected set; }
+
+        /// <inheritdoc/>
+        public ITypeMapping<T> As<T1>() where T1 : T
         {
             if (MappedType != null)
                 throw new InvalidOperationException("The registration is already set to a target type!");
@@ -38,7 +42,30 @@ namespace InjeCtor.Core.Registration
             MappedType = typeof(T1);
 
             RaiseMappingChanged();
+            return this;
         }
+
+        /// <inheritdoc/>
+        public ITypeMapping<T> AsSingleton()
+        {
+            CreationInstruction = CreationInstruction.Singleton;
+            return this;
+        }
+
+        /// <inheritdoc/>
+        public ITypeMapping<T> AsScopeSingleton()
+        {
+            CreationInstruction = CreationInstruction.Scope;
+            return this;
+        }
+
+        /// <inheritdoc/>
+        public ITypeMapping<T> AsTransient()
+        {
+            CreationInstruction = CreationInstruction.Always;
+            return this;
+        }
+
 
         #endregion
 

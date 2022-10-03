@@ -56,6 +56,30 @@ namespace InjeCtor.Core.Registration
             return true;
         }
 
+        /// <inheritdoc/>
+        public IDynamicTypeMapping<T> As<T1>() where T1 : T
+        {
+            return (IDynamicTypeMapping<T>)base.As<T1>();
+        }
+
+        /// <inheritdoc/>
+        IDynamicTypeMapping<T> IDynamicTypeMapping<T>.AsSingleton()
+        {
+            return (IDynamicTypeMapping<T>)base.AsSingleton();
+        }
+
+        /// <inheritdoc/>
+        IDynamicTypeMapping<T> IDynamicTypeMapping<T>.AsScopeSingleton()
+        {
+            return (IDynamicTypeMapping<T>)base.AsScopeSingleton();
+        }
+
+        /// <inheritdoc/>
+        IDynamicTypeMapping<T> IDynamicTypeMapping<T>.AsTransient()
+        {
+            return (IDynamicTypeMapping<T>)base.AsTransient();
+        }
+
         #endregion
     }
 }

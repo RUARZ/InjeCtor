@@ -38,8 +38,10 @@ namespace InjeCtor.Core.Test.Registration
             Assert.AreEqual(2, items.Count);
             Assert.AreEqual(typeof(ICalculator), items[0].SourceType);
             Assert.AreEqual(typeof(Calculator), items[0].MappedType);
+            Assert.AreEqual(CreationInstruction.Always, items[0].CreationInstruction);
             Assert.AreEqual(typeof(IGreeter), items[1].SourceType);
             Assert.AreEqual(typeof(Greeter), items[1].MappedType);
+            Assert.AreEqual(CreationInstruction.Always, items[1].CreationInstruction);
         }
 
         [Test]
@@ -61,6 +63,24 @@ namespace InjeCtor.Core.Test.Registration
             Assert.IsNotNull(item);
             Assert.AreEqual(typeof(ICalculator), item.SourceType);
             Assert.AreEqual(typeof(Calculator), item.MappedType);
+            Assert.AreEqual(CreationInstruction.Always, item.CreationInstruction);
+        }
+
+        [Test]
+        public void RegistrationsAdd_WithCreationInstructionChange_Successfull()
+        {
+            mTypeMapper.Add<ICalculator>().As<Calculator>().AsScopeSingleton();
+            mTypeMapper.Add<IGreeter>().As<Greeter>().AsSingleton();
+
+            IReadOnlyList<ITypeMapping> items = mTypeMapper.GetTypeMappings();
+
+            Assert.AreEqual(2, items.Count);
+            Assert.AreEqual(typeof(ICalculator), items[0].SourceType);
+            Assert.AreEqual(typeof(Calculator), items[0].MappedType);
+            Assert.AreEqual(CreationInstruction.Scope, items[0].CreationInstruction);
+            Assert.AreEqual(typeof(IGreeter), items[1].SourceType);
+            Assert.AreEqual(typeof(Greeter), items[1].MappedType);
+            Assert.AreEqual(CreationInstruction.Singleton, items[1].CreationInstruction);
         }
 
         [Test]
