@@ -67,10 +67,20 @@ namespace InjeCtor.Core.Test.Registration
         {
             Assert.IsTrue(mTypeMapper.Add<ICalculator>().Resolve());
 
-            ITypeMapping? mapping = mTypeMapper.GetTypeMapping<ICalculator>();
-            Assert.IsNotNull(mapping);
-            Assert.AreEqual(typeof(Calculator), mapping.MappedType);
-            Assert.AreEqual(CreationInstruction.Always, mapping.CreationInstruction);
+            ITypeMapping? item = mTypeMapper.GetTypeMapping<ICalculator>();
+
+            AssertMapping(item);
+
+            item = mTypeMapper.GetTypeMapping(typeof(ICalculator));
+
+            AssertMapping(item);
+
+            void AssertMapping(ITypeMapping? mapping)
+            {
+                Assert.IsNotNull(mapping);
+                Assert.AreEqual(typeof(Calculator), mapping.MappedType);
+                Assert.AreEqual(CreationInstruction.Always, mapping.CreationInstruction);
+            }
         }
 
         [Test]

@@ -60,10 +60,19 @@ namespace InjeCtor.Core.Test.Registration
 
             var item = mTypeMapper.GetTypeMapping<ICalculator>();
 
-            Assert.IsNotNull(item);
-            Assert.AreEqual(typeof(ICalculator), item.SourceType);
-            Assert.AreEqual(typeof(Calculator), item.MappedType);
-            Assert.AreEqual(CreationInstruction.Always, item.CreationInstruction);
+            AssertMapping(item);
+
+            item = mTypeMapper.GetTypeMapping(typeof(ICalculator));
+
+            AssertMapping(item);
+
+            void AssertMapping(ITypeMapping? mapping)
+            {
+                Assert.IsNotNull(mapping);
+                Assert.AreEqual(typeof(ICalculator), mapping.SourceType);
+                Assert.AreEqual(typeof(Calculator), mapping.MappedType);
+                Assert.AreEqual(CreationInstruction.Always, mapping.CreationInstruction);
+            }
         }
 
         [Test]

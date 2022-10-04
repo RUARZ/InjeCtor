@@ -62,6 +62,14 @@ namespace InjeCtor.Core.Registration
         /// <typeparam name="T">The type for which a <see cref="ITypeMapping"/> entry should be retrieved.</typeparam>
         /// <returns>The <see cref="ITypeMapping"/> entry if found, otherwise <see langword="null"/>!</returns>
         ITypeMapping? GetTypeMapping<T>();
+
+        /// <summary>
+        /// Get's the <see cref="ITypeMapping"/> instance for the passed <paramref name="type"/> if there was
+        /// a mapping added!
+        /// </summary>
+        /// <param name="type">The <see cref="Type"/> for which a mapping should be retrieved, if possible.</param>
+        /// <returns>The <see cref="ITypeMapping"/> entry if found, otherwise <see langword="null"/>!</returns>
+        ITypeMapping? GetTypeMapping(Type type);
     }
 
     /// <summary>

@@ -36,6 +36,12 @@ namespace InjeCtor.Core.Registration
             return mMappingList.GetMapping<T>();
         }
 
+        /// <inheritdoc/>
+        public ITypeMapping? GetTypeMapping(Type type)
+        {
+            return mMappingList.GetMapping(type);
+        }
+
         #endregion
     }
 }

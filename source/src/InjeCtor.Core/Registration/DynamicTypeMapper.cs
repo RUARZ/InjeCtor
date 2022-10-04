@@ -80,6 +80,12 @@ namespace InjeCtor.Core.Registration
         }
 
         /// <inheritdoc/>
+        public ITypeMapping? GetTypeMapping(Type type)
+        {
+            return mMappingList.GetMapping(type);
+        }
+
+        /// <inheritdoc/>
         public IReadOnlyList<ITypeMapping> GetTypeMappings()
         {
             return mMappingList.GetFinishedTypeMappings().ToList().AsReadOnly();

@@ -80,7 +80,18 @@ namespace InjeCtor.Core.Registration
         /// <returns>The found <see cref="ITypeMapping"/> or <see langword="null"/> if no <see cref="ITypeMapping"/> could be found.</returns>
         public ITypeMapping? GetMapping<T>()
         {
-            if (mFinishedMappings.TryGetValue(typeof(T), out ITypeMapping mapping))
+            return GetMapping(typeof(T));
+        }
+
+        /// <summary>
+        /// Tries to get the finished mapping for the passed <paramref name="type"/>.
+        /// If not found then <see langword="null"/> will be returned.
+        /// </summary>
+        /// <param name="type">The <see cref="Type"/> for which a mapping should be retrieved.</param>
+        /// <returns>The found <see cref="ITypeMapping"/> or <see langword="null"/> if no <see cref="ITypeMapping"/> could be found.</returns>
+        public ITypeMapping? GetMapping(Type type)
+        {
+            if (mFinishedMappings.TryGetValue(type, out ITypeMapping mapping))
                 return mapping;
 
             return null;
