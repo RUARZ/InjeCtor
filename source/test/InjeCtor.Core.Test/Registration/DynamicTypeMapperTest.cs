@@ -33,8 +33,10 @@ namespace InjeCtor.Core.Test.Registration
         [SetUp]
         public void SetUp()
         {
-            mTypeMapper = new DynamicTypeMapper();
             mLoadContext = new TestAssemblyLoadContext();
+            //for unit test purposes since loaded assemblies from the context remains stuck in app domain..
+            mTypeMapper = new DynamicTypeMapper(() => 
+                mLoadContext.Assemblies.Concat(new Assembly[] { GetType().Assembly }).ToArray());
         }
 
         [TearDown]

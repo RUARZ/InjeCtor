@@ -13,6 +13,33 @@ namespace InjeCtor.Core.Registration
         #region Private Fields
 
         private readonly TypeMappingList mMappingList = new TypeMappingList();
+        private readonly Func<Assembly[]>? mGetAssemblyFunc;
+
+        #endregion
+
+        #region Constructor
+
+        /// <summary>
+        /// Default constructor for <see cref="DynamicTypeMapper"/>. If this constructor is used
+        /// then on <see cref="Resolve"/> it will try to get the assemblies with 
+        /// <see cref="AppDomain.Current"/>.<see cref="AppDomain.GetAssemblies"/>. To change the
+        /// method how to get the loaded assemblies use the <see cref="DynamicTypeMapper"/> ctor
+        /// which takes a <see cref="Func{TResult}"/> parameter!
+        /// </summary>
+        public DynamicTypeMapper()
+            :this(null)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="DynamicTypeMapper"/> and takes a parameter to retrieve
+        /// the assemblies to search on <see cref="Resolve"/>.
+        /// </summary>
+        /// <param name="getAssemblyFunc"><see cref="Func{TResult}"/> to get the assemblies to search for resolving.</param>
+        public DynamicTypeMapper(Func<Assembly[]>? getAssemblyFunc)
+        {
+            mGetAssemblyFunc = getAssemblyFunc;
+        }
 
         #endregion
 
@@ -27,6 +54,9 @@ namespace InjeCtor.Core.Registration
         /// <inheritdoc/>
         public bool Resolve()
         {
+            if (mGetAssemblyFunc != null)
+                return Resolve(mGetAssemblyFunc.Invoke() ?? new Assembly[0]);
+            
             return Resolve(AppDomain.CurrentDomain.GetAssemblies());
         }
 
