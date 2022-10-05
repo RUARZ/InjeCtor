@@ -2,6 +2,7 @@
 using InjeCtor.Core.Resolve;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -79,6 +80,8 @@ namespace InjeCtor.Core.Creation
                         parameters[i] = pInfo.DefaultValue;
                     else if (pInfo.ParameterType.IsValueType && Nullable.GetUnderlyingType(pInfo.ParameterType) is null)
                         parameters[i] = Activator.CreateInstance(pInfo.ParameterType);
+                    else if (!pInfo.ParameterType.IsValueType && !IsReferenceTypeNullable(pInfo, info))
+                        parameters[i] = Activator.CreateInstance(pInfo.ParameterType);
                     else
                         parameters[i] = null;
                 }
@@ -89,6 +92,29 @@ namespace InjeCtor.Core.Creation
             }
 
             return info.Invoke(parameters);
+        }
+
+        private bool IsReferenceTypeNullable(ParameterInfo pInfo, ConstructorInfo ctorInfo)
+        {
+            var classNullableContextAttribute = ctorInfo.DeclaringType.CustomAttributes
+                .FirstOrDefault(c => c.AttributeType.Name == "NullableContextAttribute");
+
+            var paramterNullableAttribute = pInfo.CustomAttributes
+                .FirstOrDefault(x => x.AttributeType.Name == "NullableAttribute");
+
+            if (classNullableContextAttribute is null && paramterNullableAttribute is null)
+                return true;
+
+            var classNullableContext = classNullableContextAttribute?.ConstructorArguments
+                ?.First(x => x.ArgumentType.Name == "Byte").Value;
+
+            var nullableParameterContext = paramterNullableAttribute?.ConstructorArguments
+                ?.First(ca => ca.ArgumentType.Name == "Byte").Value;
+
+            nullableParameterContext ??= classNullableContext;
+
+            byte? context = nullableParameterContext as byte?;
+            return context == 0 || context == 2;
         }
 
         private ITypeMappingProvider GetTypeMappingProvider()
