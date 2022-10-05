@@ -57,7 +57,7 @@ namespace InjeCtor.Core.Registration
         }
 
         /// <inheritdoc/>
-        public IDynamicTypeMapping<T> As<T1>() where T1 : T
+        public new IDynamicTypeMapping<T> As<T1>() where T1 : T
         {
             return (IDynamicTypeMapping<T>)base.As<T1>();
         }
