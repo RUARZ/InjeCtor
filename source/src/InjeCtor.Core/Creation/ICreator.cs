@@ -1,4 +1,5 @@
 ﻿using InjeCtor.Core.Registration;
+using InjeCtor.Core.Scope;
 using System;
 using System.Collections.Generic;
 
@@ -35,5 +36,27 @@ namespace InjeCtor.Core.Creation
         /// <typeparam name="T">The type for which the corresponding mapped type should be created.</typeparam>
         /// <returns>The created type.</returns>
         T Create<T>();
+    }
+
+    /// <summary>
+    /// Interface for <see cref="ICreator"/> which are aware for <see cref="IScope"/>'s to check for singleton instances.
+    /// </summary>
+    public interface IScopeAwareCreator : ICreator
+    {
+        /// <summary>
+        /// Creates a new instance which was mapped for the passed <paramref name="type"/>.
+        /// </summary>
+        /// <param name="type">The <see cref="Type"/> for which the corresponding mapped type should be created.</param>
+        /// <param name="scope">The <see cref="IScope"/> instance to use for checking of singletons.</param>
+        /// <returns>The created type.</returns>
+        object Create(Type type, IScope? scope);
+
+        /// <summary>
+        /// Creates a new instance which was mapped for <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The type for which the corresponding mapped type should be created.</typeparam>
+        /// <param name="scope">The <see cref="IScope"/> instance to use for checking of singletons.</param>
+        /// <returns>The created type.</returns>
+        T Create<T>(IScope? scope);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using InjeCtor.Core.Registration;
 using InjeCtor.Core.Resolve;
+using InjeCtor.Core.Scope;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,10 +10,10 @@ using System.Text;
 namespace InjeCtor.Core.Creation
 {
     /// <summary>
-    /// The default implementation for <see cref="ICreator"/> which uses <see cref="Activator.CreateInstance(Type)"/>
+    /// The default implementation for <see cref="IScopeAwareCreator"/> which uses <see cref="Activator.CreateInstance(Type)"/>
     /// for the creation of the objects.
     /// </summary>
-    public class DefaultCreator : ICreator
+    public class DefaultCreator : IScopeAwareCreator
     {
         #region Private Fields
 
@@ -35,8 +36,7 @@ namespace InjeCtor.Core.Creation
         /// <inheritdoc/>
         public object Create(Type type)
         {
-            ITypeMappingProvider providerToUse = GetTypeMappingProvider();
-            return Create(type, providerToUse);
+            return Create(type, null);
         }
 
         /// <inheritdoc/>
@@ -45,23 +45,41 @@ namespace InjeCtor.Core.Creation
             return (T)Create(typeof(T));
         }
 
+        /// <inheritdoc/>
+        public object Create(Type type, IScope? scope)
+        {
+            ITypeMappingProvider providerToUse = GetTypeMappingProvider();
+            return Create(type, providerToUse, scope);
+        }
+
+        /// <inheritdoc/>
+        public T Create<T>(IScope? scope)
+        {
+            return (T)Create(typeof(T), scope);
+        }
+
         #endregion
 
         #region Private Methods
 
-        private object Create(Type type, ITypeMappingProvider providerToUse)
+        private object Create(Type type, ITypeMappingProvider providerToUse, IScope? scope)
         {
             Type creationType = providerToUse.GetTypeMapping(type)?.MappedType ?? type;
 
-            if (mSingletons != null && mSingletons.TryGetValue(creationType, out object singleton))
+            object? singleton = scope?.GetSingleton(type);
+
+            if (singleton != null)
+                return singleton;
+
+            if (mSingletons != null && mSingletons.TryGetValue(creationType, out singleton))
                 return singleton;
 
             ConstructorInfo? constructorInfo = mCtorResolver.ResolveConstructorInfo(creationType, providerToUse);
-            object createdObject = CreateFromConstructor(constructorInfo, providerToUse);
+            object createdObject = CreateFromConstructor(constructorInfo, providerToUse, scope);
             return createdObject;
         }
 
-        private object CreateFromConstructor(ConstructorInfo? info, ITypeMappingProvider providerToUse)
+        private object CreateFromConstructor(ConstructorInfo? info, ITypeMappingProvider providerToUse, IScope? scope)
         {
             if (info is null)
                 throw new ArgumentNullException(nameof(info), "The constructor info was not set / resolved!");
@@ -87,7 +105,7 @@ namespace InjeCtor.Core.Creation
                 }
                 else
                 {
-                    parameters[i] = Create(mapping.MappedType, providerToUse);
+                    parameters[i] = Create(mapping.MappedType, providerToUse, scope);
                 }
             }
 
