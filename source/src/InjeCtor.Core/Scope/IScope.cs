@@ -1,4 +1,5 @@
 ﻿using InjeCtor.Core.Creation;
+using InjeCtor.Core.TypeInformation;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,8 +9,14 @@ namespace InjeCtor.Core.Scope
     /// <summary>
     /// Interface for different scopes for creating / getting instances.
     /// </summary>
-    public interface IScope : IScopeAwareCreator
+    public interface IScope : ICreator, IDisposable
     {
+        /// <summary>
+        /// Instance of <see cref="ITypeInformationProvider"/> to get informations for types for further
+        /// injections.
+        /// </summary>
+        ITypeInformationProvider? TypeInformationProvider { get; set; }
+
         /// <summary>
         /// Tries to get already instantiated singleton instance for <typeparamref name="T"/>.
         /// </summary>
