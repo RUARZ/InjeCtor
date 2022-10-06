@@ -19,7 +19,8 @@ namespace InjeCtor.Core
 
         private readonly ITypeInformationProvider mTypeInformationProvider;
         private readonly IScopeAwareCreator mCreator;
-        
+
+        private ITypeMappingProvider mMappingProvider;
         private IScope? mScope;
         private ConcurrentBag<IScope>? mScopes = new ConcurrentBag<IScope>();
 
@@ -29,21 +30,59 @@ namespace InjeCtor.Core
 
         #region Constructor
 
+        /// <summary>
+        /// Creates a instance of <see cref="InjeCtor"/> and initializes it with the default implementations.
+        /// </summary>
         public InjeCtor()
             : this(new SimpleTypeMapper(), new TypeInformationBuilder(), new DefaultCreator())
         {
 
         }
 
+        /// <summary>
+        /// Creates a new instance of <see cref="InjeCtor"/> which takes a <see cref="ITypeMapper"/> instance to use.
+        /// </summary>
+        /// <param name="typeMapper">Implementation of <see cref="ITypeMapper"/> to use.</param>
+        public InjeCtor(ITypeMapper typeMapper)
+            :this(typeMapper, new TypeInformationBuilder(), new DefaultCreator())
+        {
+
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="InjeCtor"/> which takes a <see cref="ITypeMapper"/> and <see cref="ITypeInformationProvider"/>
+        /// instance to use.
+        /// </summary>
+        /// <param name="typeMapper">Implementation of <see cref="ITypeMapper"/> to use.</param>
+        /// <param name="typeInfoProvider">Implementation of <see cref="ITypeInformationProvider"/> to use.</param>
+        public InjeCtor(ITypeMapper typeMapper, ITypeInformationProvider typeInfoProvider)
+            :this(typeMapper, typeInfoProvider, new DefaultCreator())
+        {
+
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="InjeCtor"/> and takes implementations of interfaces to use for operation.
+        /// </summary>
+        /// <param name="mapper">Implementation of <see cref="ITypeMapper"/> to use.</param>
+        /// <param name="typeInfoProvider">Implementation of <see cref="ITypeInformationProvider"/> to use.</param>
+        /// <param name="creator">Implementation of <see cref="IScopeAwareCreator"/> to use.</param>
         public InjeCtor(ITypeMapper mapper, ITypeInformationProvider typeInfoProvider, IScopeAwareCreator creator)
         {
             Mapper = mapper;
-            if (mapper is ITypeMappingProvider mappingProvider)
-                MappingProvider = mappingProvider;
+            mMappingProvider = mapper;
 
             mTypeInformationProvider = typeInfoProvider;
             mCreator = creator;
             mCreator.SetSingletons(mGlobalSingletons);
+
+            ITypeMapping? mapping = Mapper.GetTypeMapping<IScope>();
+
+            if (mapping is null || mapping.MappedType is null)
+                Mapper.Add<IScope>().As<Scope.Scope>(); // in case no other implementation defined then use default one
+
+            // setup the default scope
+            mScope = CreateAndSetupScope();
         }
 
         #endregion
@@ -54,7 +93,14 @@ namespace InjeCtor.Core
         public ITypeMapper Mapper { get; }
 
         /// <inheritdoc/>
-        public ITypeMappingProvider? MappingProvider { get; set; }
+        public ITypeMappingProvider? MappingProvider
+        {
+            get => mMappingProvider;
+            set
+            {
+                throw new InvalidOperationException($"Setting of '{nameof(MappingProvider)}' is not allowed since it can only be set through constructor for '{typeof(InjeCtor).FullName}'!");
+            }
+        }
 
         /// <inheritdoc/>
         public object Create(Type type)
@@ -100,10 +146,8 @@ namespace InjeCtor.Core
         /// <inheritdoc/>
         public IScope CreateScope()
         {
-            IScope scope = new Scope.Scope(mCreator);
-            scope.TypeInformationProvider = mTypeInformationProvider;
-            scope.MappingProvider = MappingProvider;
-            
+            IScope scope = CreateAndSetupScope();
+
             //TODO: update to get informations if the scope was disposed already to remove it from the
             // mScopes bag!
             mScopes?.Add(scope);
@@ -137,6 +181,20 @@ namespace InjeCtor.Core
         public void SetSingletons(IReadOnlyDictionary<Type, object> singletons)
         {
             throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private IScope CreateAndSetupScope()
+        {
+            IScope scope = mCreator.Create<IScope>();
+            scope.Creator = mCreator;
+            scope.TypeInformationProvider = mTypeInformationProvider;
+            scope.MappingProvider = MappingProvider;
+
+            return scope;
         }
 
         #endregion

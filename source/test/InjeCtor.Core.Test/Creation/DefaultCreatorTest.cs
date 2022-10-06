@@ -157,6 +157,7 @@ namespace InjeCtor.Core.Test.Creation
 
             public ITypeMappingProvider? MappingProvider { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
             public ITypeInformationProvider? TypeInformationProvider { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+            public ICreator? Creator { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
             public object Create(Type type, IScope? scope)
             {
