@@ -46,6 +46,12 @@ namespace InjeCtor.Core.Registration
         #region IDynamicTypeMapper
 
         /// <inheritdoc/>
+        ITypeMapping<T> ITypeMapper.Add<T>()
+        {
+            return mMappingList.Add(new TypeMapping<T>()); // in this case a normal type mapping is fine.
+        }
+
+        /// <inheritdoc/>
         public IDynamicTypeMapping<T> Add<T>()
         {
             return mMappingList.Add(new DynamicTypeMapping<T>());

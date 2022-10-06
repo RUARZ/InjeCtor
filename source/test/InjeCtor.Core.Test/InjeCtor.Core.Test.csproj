@@ -36,4 +36,8 @@
     <ProjectReference Include="..\InjeCtor.Core.Test.Interfaces\InjeCtor.Core.Test.Interfaces.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="IntegrationTests\" />
+  </ItemGroup>
+
 </Project>

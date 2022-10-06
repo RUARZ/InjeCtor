@@ -16,23 +16,15 @@ namespace InjeCtor.Core.Scope
         private IReadOnlyDictionary<Type, object>? mGlobalSingletons;
         private readonly ConcurrentDictionary<Type, object> mScopeSingletons = new ConcurrentDictionary<Type, object>();
 
-        private readonly ICreator mCreator;
-
-        #endregion
-
-        #region Constructor
-
-        public Scope(ICreator creator)
-        {
-            mCreator = creator;
-        }
-
         #endregion
 
         #region IScope
 
         /// <inheritdoc/>
         public ITypeMappingProvider? MappingProvider { get; set; }
+
+        /// <inheritdoc/>
+        public ICreator? Creator { get; set; }
         
         /// <inheritdoc/>
         public ITypeInformationProvider? TypeInformationProvider { get; set; }
@@ -48,16 +40,19 @@ namespace InjeCtor.Core.Scope
             if (mapping.MappedType is null)
                 throw new InvalidOperationException($"The mapped type is null for '{mapping.SourceType.FullName}'!");
 
+            if (Creator is null)
+                throw new InvalidOperationException($"The instance of '{typeof(ICreator).FullName}' to use was not set!");
+
             object instance;
             switch (mapping.CreationInstruction)
             {
                 case CreationInstruction.Always:
-                    instance = mCreator.Create(type);
+                    instance = Creator.Create(type);
                     break;
                 case CreationInstruction.Scope:
                     if (!mScopeSingletons.TryGetValue(type, out instance))
                     {
-                        instance = mCreator.Create(type);
+                        instance = Creator.Create(type);
                         mScopeSingletons[type] = instance;
                     }
                     break;

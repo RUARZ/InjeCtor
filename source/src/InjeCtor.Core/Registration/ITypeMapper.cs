@@ -8,7 +8,7 @@ namespace InjeCtor.Core.Registration
     /// <summary>
     /// Interface of a type mapper to add mappings for types to use.
     /// </summary>
-    public interface ITypeMapper
+    public interface ITypeMapper : ITypeMappingProvider
     {
         /// <summary>
         /// Add's a new mapping for <typeparamref name="T"/>.
@@ -21,14 +21,14 @@ namespace InjeCtor.Core.Registration
     /// <summary>
     /// Interface for a dynamic type mapper which allows to add type mappings and try to resolve them later.
     /// </summary>
-    public interface IDynamicTypeMapper
+    public interface IDynamicTypeMapper : ITypeMapper
     {
         /// <summary>
         /// Add's a new mapping for <typeparamref name="T"/>.
         /// </summary>
         /// <typeparam name="T">The type which should be mapped.</typeparam>
         /// <returns>A <see cref="IDynamicTypeMapping{TDef}"/> instance for further configuration.</returns>
-        IDynamicTypeMapping<T> Add<T>();
+        new IDynamicTypeMapping<T> Add<T>();
 
         /// <summary>
         /// Tries to resolve all mappings which does not have a mapped type set yet.
