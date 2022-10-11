@@ -18,9 +18,9 @@ namespace InjeCtor.Core.Scope
         ITypeInformationProvider? TypeInformationProvider { get; set; }
 
         /// <summary>
-        /// Instace which implements <see cref="ICreator"/> which can be used for creation of instances.
+        /// Instace which implements <see cref="IScopeAwareCreator"/> which can be used for creation of instances.
         /// </summary>
-        ICreator? Creator { get; set; }
+        IScopeAwareCreator? Creator { get; set; }
 
         /// <summary>
         /// Tries to get already instantiated singleton instance for <typeparamref name="T"/>.

@@ -1,4 +1,5 @@
-﻿using InjeCtor.Core.Creation;
+﻿using System.Runtime.CompilerServices;
+using InjeCtor.Core.Creation;
 using InjeCtor.Core.Registration;
 using InjeCtor.Core.TypeInformation;
 using System;
@@ -7,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+[assembly: InternalsVisibleTo("InjeCtor.Core.Test")]
 namespace InjeCtor.Core.Scope
 {
     internal class Scope : IScope
@@ -24,7 +26,7 @@ namespace InjeCtor.Core.Scope
         public ITypeMappingProvider? MappingProvider { get; set; }
 
         /// <inheritdoc/>
-        public ICreator? Creator { get; set; }
+        public IScopeAwareCreator? Creator { get; set; }
         
         /// <inheritdoc/>
         public ITypeInformationProvider? TypeInformationProvider { get; set; }
@@ -47,12 +49,12 @@ namespace InjeCtor.Core.Scope
             switch (mapping.CreationInstruction)
             {
                 case CreationInstruction.Always:
-                    instance = Creator.Create(type);
+                    instance = Creator.Create(type, this);
                     break;
                 case CreationInstruction.Scope:
                     if (!mScopeSingletons.TryGetValue(type, out instance))
                     {
-                        instance = Creator.Create(type);
+                        instance = Creator.Create(type, this);
                         mScopeSingletons[type] = instance;
                     }
                     break;

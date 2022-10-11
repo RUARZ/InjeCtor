@@ -2,6 +2,7 @@
 using InjeCtor.Core.Registration;
 using InjeCtor.Core.Scope;
 using InjeCtor.Core.Test.Interfaces;
+using InjeCtor.Core.Test.TestClasses;
 using InjeCtor.Core.TypeInformation;
 using NUnit.Framework;
 using System;
@@ -17,7 +18,11 @@ namespace InjeCtor.Core.Test
     {
         #region Private Fields
 
+        private DummyTypeMapper mTypeMapper;
+        private DummyTypeInformationProvider mTypeInformationProvider;
+        private DummyCreator mCreator;
         private InjeCtor mInjeCtor;
+
 
         #endregion
 
@@ -26,149 +31,147 @@ namespace InjeCtor.Core.Test
         [SetUp]
         public void SetUp()
         {
-
-            mInjeCtor = new InjeCtor();
+            mTypeMapper = new DummyTypeMapper();
+            mTypeInformationProvider = new DummyTypeInformationProvider();
+            mCreator = new DummyCreator();
+            DummyScope.ResetCounter();
+            SingletonClass.ResetCounter();
+            mInjeCtor = new InjeCtor(mTypeMapper, mTypeInformationProvider, mCreator);
         }
 
         #endregion
 
         #region Tests
 
-        #endregion
-
-        #region DummyImplementations
-
-        class DummyTypeMapping : ITypeMapping
+        [TestCase(typeof(ICalculator), typeof(Calculator))]
+        [TestCase(typeof(IGreeter), typeof(Greeter))]
+        public void Create_MultipleTimesWithAlwaysCreationInstruction_SuccessWithNewInstances(Type requestType, Type resultType)
         {
-            public Type SourceType { get; set; }
+            var createdObject = mInjeCtor.Create(requestType);
+            var secondObject = mInjeCtor.Create(requestType);
 
-            public Type? MappedType { get; set; }
-
-            public CreationInstruction CreationInstruction { get; set; }
+            Assert.That(createdObject, Is.Not.Null);
+            Assert.That(createdObject, Is.InstanceOf(resultType));
+            Assert.That(secondObject, Is.Not.Null);
+            Assert.That(secondObject, Is.InstanceOf(resultType));
+            Assert.That(createdObject, Is.Not.SameAs(secondObject));
         }
 
-        class DummyTypeMapper : ITypeMapper
+        [TestCase(typeof(ICalculator), typeof(Calculator))]
+        [TestCase(typeof(IGreeter), typeof(Greeter))]
+        [TestCase(typeof(BaseClassForSingleton), typeof(SingletonClass))]
+        public void Create_MultipleTimesWithSingletonCreationInstruction_SuccessWithSameInstances(Type requestType, Type resultType)
         {
-            public ITypeMapping<T> Add<T>()
-            {
-                throw new NotImplementedException();
-            }
+            mTypeMapper.SetCreationInstruction(CreationInstruction.Singleton);
+            var createdObject = mInjeCtor.Create(requestType);
+            var secondObject = mInjeCtor.Create(requestType);
 
-            public ITypeMapping? GetTypeMapping<T>()
-            {
-                return GetTypeMapping(typeof(T));
-            }
-
-            public ITypeMapping? GetTypeMapping(Type type)
-            {
-                DummyTypeMapping mapping = new DummyTypeMapping
-                {
-                    SourceType = type,
-                };
-
-                string typeName = type.FullName;
-                if (typeName == typeof(ICalculator).FullName)
-                    mapping.MappedType = typeof(Calculator);
-                else if (typeName == typeof(IGreeter).FullName)
-                    mapping.MappedType = typeof(Greeter);
-                else if (typeName == typeof(IScope).FullName)
-                    mapping.MappedType = typeof(DummyScope);
-
-                return mapping;
-            }
-
-            public IReadOnlyList<ITypeMapping> GetTypeMappings()
-            {
-                throw new NotImplementedException();
-            }
+            Assert.That(createdObject, Is.Not.Null);
+            Assert.That(createdObject, Is.InstanceOf(resultType));
+            Assert.That(secondObject, Is.Not.Null);
+            Assert.That(secondObject, Is.InstanceOf(resultType));
+            Assert.That(createdObject, Is.SameAs(secondObject));
+            Assert.That(mCreator.CreatedSingletons.Count, Is.EqualTo(1));
+            Assert.That(mCreator.CreatedSingletons[requestType], Is.InstanceOf(resultType));
         }
 
-        class DummyTypeInformationProvider : ITypeInformationProvider
+        [Test]
+        public void Create_MultipleTimesSingleton_OnlyOneTimeCreated()
         {
-            public ITypeInformation? Get<T>()
-            {
-                return null;
-            }
+            var createdObject = mInjeCtor.Create<BaseClassForSingleton>();
 
-            public ITypeInformation? Get(Type type)
-            {
-                return null;
-            }
+            Assert.That(createdObject, Is.Not.Null);
+            Assert.That(createdObject, Is.InstanceOf<BaseClassForSingleton>());
+            Assert.That(createdObject, Is.InstanceOf<SingletonClass>());
+            Assert.That(createdObject, Is.SameAs(mInjeCtor.Create<BaseClassForSingleton>()));
+            Assert.That(createdObject, Is.SameAs(mInjeCtor.Create<BaseClassForSingleton>()));
+            Assert.That(createdObject, Is.SameAs(mInjeCtor.Create<BaseClassForSingleton>()));
+            Assert.That(createdObject, Is.SameAs(mInjeCtor.Create<BaseClassForSingleton>()));
+            Assert.That(SingletonClass.CreationCounter, Is.EqualTo(1));
+            Assert.That(mCreator.CreatedSingletons.Count, Is.EqualTo(1));
+            Assert.That(mCreator.CreatedSingletons[typeof(BaseClassForSingleton)], Is.InstanceOf(typeof(SingletonClass)));
         }
 
-        class DummyCreator : IScopeAwareCreator
+        [Test]
+        public void Create_MissingTypeMappingProvider_ThrowsInvalidOperationException()
         {
-            public ITypeMappingProvider? MappingProvider { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+            mInjeCtor = new InjeCtor(null, mTypeInformationProvider, mCreator);
 
-            public object Create(Type type, IScope? scope)
-            {
-                string typeName = type.FullName;
-                if (typeName == typeof(ICalculator).FullName)
-                    return new Calculator();
-                else if (typeName == typeof(IGreeter).FullName)
-                    return new Greeter();
-                else if (typeName == typeof(IScope).FullName)
-                    return new DummyCreator();
-
-                throw new InvalidOperationException($"unknown type '{typeName}'!");
-            }
-
-            public T Create<T>(IScope? scope)
-            {
-                return (T)Create(typeof(T), scope);
-            }
-
-            public object Create(Type type)
-            {
-                return Create(type, null);
-            }
-
-            public T Create<T>()
-            {
-                return (T)Create(typeof(T), null);
-            }
-
-            public void SetSingletons(IReadOnlyDictionary<Type, object> singletons)
-            {
-                
-            }
+            Assert.Throws<InvalidOperationException>(() => mInjeCtor.Create(typeof(ICalculator)));
         }
 
-        class DummyScope : IScope
+        [Test]
+        public void Create_MissingMappedType_ThrowsInvalidOperationException()
         {
-            public ITypeInformationProvider? TypeInformationProvider { get; set; }
-            public ICreator? Creator { get; set; }
-            public ITypeMappingProvider? MappingProvider { get; set; }
+            Assert.Throws<InvalidOperationException>(() => mInjeCtor.Create<ClassWithoutMappedType>());
+        }
 
-            public object Create(Type type)
-            {
-                return Creator.Create(type);
-            }
+        [Test]
+        public void PassedImplementations_GetPassedImplementations_SameAsPassed()
+        {
+            Assert.That(mInjeCtor.Mapper, Is.SameAs(mTypeMapper));
+            Assert.That(mInjeCtor.MappingProvider, Is.SameAs(mTypeMapper));
+            Assert.That(mInjeCtor.MappingProvider, Is.SameAs(mInjeCtor.Mapper));
+        }
 
-            public T Create<T>()
-            {
-                return Creator.Create<T>();
-            }
+        [Test]
+        public void MappingProvider_SetMappingProvider_ThrowsInvalidOperationException()
+        {
+            Assert.Throws<InvalidOperationException>(() => mInjeCtor.MappingProvider = null);
+        }
 
-            public void Dispose()
-            {
-                
-            }
+        [Test]
+        public void CreateScope_GetScope_NewScopeCreated()
+        {
+            var scope = mInjeCtor.CreateScope();
 
-            public object? GetSingleton<T>()
-            {
-                return null;
-            }
+            Assert.That(scope, Is.Not.Null);
+            Assert.That(scope.Creator, Is.Not.Null);
+            Assert.That(scope.Creator, Is.SameAs(mCreator));
+            Assert.That(scope.TypeInformationProvider, Is.Not.Null);
+            Assert.That(scope.TypeInformationProvider, Is.SameAs(mTypeInformationProvider));
+            Assert.That(scope.MappingProvider, Is.Not.Null);
+            Assert.That(scope.MappingProvider, Is.SameAs(mTypeMapper));
+            Assert.That(DummyScope.CreationCounter, Is.EqualTo(2));
+        }
 
-            public object? GetSingleton(Type type)
-            {
-                return null;
-            }
+        [Test]
+        public void Dispose_MultipleScopes_ScopesDisposed()
+        {
+            mInjeCtor.CreateScope();
+            mInjeCtor.CreateScope();
+            mInjeCtor.CreateScope();
 
-            public void SetSingletons(IReadOnlyDictionary<Type, object> singletons)
-            {
-                
-            }
+            mInjeCtor.Dispose();
+
+            Assert.That(DummyScope.CreationCounter, Is.EqualTo(4)); // 3  + 1 for default scope
+            Assert.That(DummyScope.DisposeCounter, Is.EqualTo(4)); // same as above
+        }
+
+        [Test]
+        public void Dispose_SingletonWithAndWithoutDispose_DisposeCorrect()
+        {
+            var disposeSingleton = mInjeCtor.Create<BaseClassForSingleton>();
+            var nonDisposeSingleton = mInjeCtor.Create<BaseClassForNonDisposableSingleton>();
+
+            Assert.That(disposeSingleton, Is.Not.Null);
+            Assert.That(nonDisposeSingleton, Is.Not.Null);
+            Assert.That(disposeSingleton, Is.Not.SameAs(nonDisposeSingleton));
+            Assert.That(disposeSingleton, Is.InstanceOf<BaseClassForSingleton>());
+            Assert.That(disposeSingleton, Is.InstanceOf<SingletonClass>());
+            Assert.That(nonDisposeSingleton, Is.InstanceOf<BaseClassForNonDisposableSingleton>());
+            Assert.That(nonDisposeSingleton, Is.InstanceOf<NonDisposableSingleton>());
+
+            mInjeCtor.Dispose();
+
+            Assert.That(nonDisposeSingleton.IsDisposed, Is.False);
+            Assert.That(disposeSingleton.IsDisposed, Is.True);
+        }
+
+        [Test]
+        public void SetSingletons_Call_ThrowsInvalidOperationException()
+        {
+            Assert.Throws<InvalidOperationException>(() => mInjeCtor.SetSingletons(null));
         }
 
         #endregion

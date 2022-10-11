@@ -76,10 +76,10 @@ namespace InjeCtor.Core
             mCreator = creator;
             mCreator.SetSingletons(mGlobalSingletons);
 
-            ITypeMapping? mapping = Mapper.GetTypeMapping<IScope>();
+            ITypeMapping? mapping = Mapper?.GetTypeMapping<IScope>();
 
             if (mapping is null || mapping.MappedType is null)
-                Mapper.Add<IScope>().As<Scope.Scope>(); // in case no other implementation defined then use default one
+                Mapper?.Add<IScope>().As<Scope.Scope>(); // in case no other implementation defined then use default one
 
             // setup the default scope
             mScope = CreateAndSetupScope();
@@ -180,7 +180,7 @@ namespace InjeCtor.Core
         /// <inheritdoc/>
         public void SetSingletons(IReadOnlyDictionary<Type, object> singletons)
         {
-            throw new NotImplementedException();
+            throw new InvalidOperationException($"Setting the singletons for '{nameof(InjeCtor)}' is not allowed!");
         }
 
         #endregion
