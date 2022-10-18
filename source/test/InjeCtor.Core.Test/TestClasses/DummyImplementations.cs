@@ -140,6 +140,9 @@ namespace InjeCtor.Core.Test.TestClasses
         public static int CreationCounter { get; private set; }
         public static int DisposeCounter { get; private set; }
 
+        public event EventHandler<RequestSingletonCreationEventArgs>? RequestSingletonCreationInstance;
+        public event EventHandler? Disposing;
+
         public static void ResetCounter()
         {
             CreationCounter = 0;
