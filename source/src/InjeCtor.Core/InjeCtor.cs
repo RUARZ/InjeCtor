@@ -76,6 +76,7 @@ namespace InjeCtor.Core
 
             mTypeInformationProvider = typeInfoProvider;
             mCreator = creator;
+            mCreator.MappingProvider = mMappingProvider;
             mCreator.SetSingletons(mGlobalSingletons);
 
             ITypeMapping? mapping = Mapper?.GetTypeMapping<IScope>();

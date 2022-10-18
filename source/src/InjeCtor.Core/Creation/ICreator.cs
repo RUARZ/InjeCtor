@@ -41,7 +41,7 @@ namespace InjeCtor.Core.Creation
     /// <summary>
     /// Interface for <see cref="ICreator"/> which are aware for <see cref="IScope"/>'s to check for singleton instances.
     /// </summary>
-    public interface IScopeAwareCreator : ICreator
+    public interface IScopeAwareCreator : ICreator, ISingletonCreationRequester
     {
         /// <summary>
         /// Creates a new instance which was mapped for the passed <paramref name="type"/>.
@@ -58,5 +58,41 @@ namespace InjeCtor.Core.Creation
         /// <param name="scope">The <see cref="IScope"/> instance to use for checking of singletons.</param>
         /// <returns>The created type.</returns>
         T Create<T>(IScope? scope);
+    }
+
+    /// <summary>
+    /// Interface for proventing a event to request creation of singleton instances.
+    /// </summary>
+    public interface ISingletonCreationRequester
+    {
+        /// <summary>
+        /// Event which is thrown if a global singleton instance needs to be created which was not already created.
+        /// </summary>
+        event EventHandler<RequestSingletonCreationEventArgs>? RequestSingletonCreationInstance;
+    }
+
+    /// <summary>
+    /// Event args for requesting a creation of a singleton. Event args also used to get the created instance if successfull!
+    /// </summary>
+    public class RequestSingletonCreationEventArgs : EventArgs
+    {
+        /// <summary>
+        /// Creates a new instance of <see cref="RequestSingletonCreationEventArgs"/>.
+        /// </summary>
+        /// <param name="type">The type which is requested to create.</param>
+        public RequestSingletonCreationEventArgs(Type type)
+        {
+            Type = type;
+        }
+
+        /// <summary>
+        /// The type which is requested to be created as global singleton
+        /// </summary>
+        public Type Type { get; set; }
+
+        /// <summary>
+        /// The created instance for the requested type!
+        /// </summary>
+        public object? Instance { get; set; }
     }
 }

@@ -25,6 +25,9 @@ namespace InjeCtor.Core.Creation
         #region ICreator
 
         /// <inheritdoc/>
+        public event EventHandler<RequestSingletonCreationEventArgs>? RequestSingletonCreationInstance;
+
+        /// <inheritdoc/>
         public ITypeMappingProvider? MappingProvider { get; set; }
 
         /// <inheritdoc/>
@@ -64,15 +67,25 @@ namespace InjeCtor.Core.Creation
 
         private object Create(Type type, ITypeMappingProvider providerToUse, IScope? scope)
         {
-            Type creationType = providerToUse.GetTypeMapping(type)?.MappedType ?? type;
+            ITypeMapping? mapping = providerToUse.GetTypeMapping(type);
+            Type creationType = mapping?.MappedType ?? type;
 
-            object? singleton = scope?.GetSingleton(type);
+            if (mapping != null && scope != null && mapping.CreationInstruction != CreationInstruction.Always)
+            {
+                object? singleton = scope.GetSingleton(type);
 
-            if (singleton != null)
-                return singleton;
+                if (singleton != null)
+                    return singleton;
 
-            if (mSingletons != null && mSingletons.TryGetValue(creationType, out singleton))
-                return singleton;
+                if (mSingletons != null && mSingletons.TryGetValue(type, out singleton))
+                    return singleton;
+
+                RequestSingletonCreationEventArgs args = new RequestSingletonCreationEventArgs(type);
+                RequestSingletonCreationInstance?.Invoke(this, args);
+
+                if (args.Instance != null)
+                    return args.Instance;
+            }
 
             ConstructorInfo? constructorInfo = mCtorResolver.ResolveConstructorInfo(creationType, providerToUse);
             object createdObject = CreateFromConstructor(constructorInfo, providerToUse, scope);
