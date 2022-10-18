@@ -17,6 +17,8 @@ namespace InjeCtor.Core
     {
         #region Private Fields
 
+        private readonly object mSingletonCreationLockObject = new object();
+
         private readonly ITypeInformationProvider mTypeInformationProvider;
         private readonly IScopeAwareCreator mCreator;
 
@@ -123,12 +125,7 @@ namespace InjeCtor.Core
                     instance = mCreator.Create(type, mScope);
                     break;
                 case CreationInstruction.Singleton:
-                    if (!mGlobalSingletons.TryGetValue(type, out instance))
-                    {
-                        instance = mCreator.Create(type);
-                        mGlobalSingletons[type] = instance;
-                    }
-                    break;
+                    return CreateSingletonInstance(type);
                 default:
                     throw new NotSupportedException($"The creation type '{mapping.CreationInstruction}' seems to not be implemented yet!");
             }
@@ -193,8 +190,49 @@ namespace InjeCtor.Core
             scope.Creator = mCreator;
             scope.TypeInformationProvider = mTypeInformationProvider;
             scope.MappingProvider = MappingProvider;
+            scope.Disposing += Scope_Disposing;
+            scope.RequestSingletonCreationInstance += Scope_RequestSingletonCreationInstance;
 
             return scope;
+        }
+
+        private object CreateSingletonInstance(Type type)
+        {
+            if (!mGlobalSingletons.TryGetValue(type, out var instance))
+            {
+                lock (mSingletonCreationLockObject)
+                {
+                    // a second check in case a other thread created in the mean time an instance for this type while waiting for the lock.
+                    if (!mGlobalSingletons.TryGetValue(type, out instance))
+                    {
+                        instance = mCreator.Create(type);
+                        mGlobalSingletons[type] = instance;
+
+                        //TODO: furhter processing for injection depending on type informations!
+                    }
+                }
+            }
+
+            return instance;
+        }
+
+        #endregion
+
+        #region IScope Event handling
+
+        private void Scope_RequestSingletonCreationInstance(object sender, RequestSingletonCreationEventArgs e)
+        {
+            object instance = CreateSingletonInstance(e.Type);
+            e.Instance = instance;
+        }
+
+        private void Scope_Disposing(object sender, EventArgs e)
+        {
+            if (!(sender is IScope scope))
+                return;
+
+            scope.Disposing -= Scope_Disposing;
+            scope.RequestSingletonCreationInstance -= Scope_RequestSingletonCreationInstance;
         }
 
         #endregion

@@ -159,6 +159,9 @@ namespace InjeCtor.Core.Test.Creation
             public ITypeInformationProvider? TypeInformationProvider { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
             public IScopeAwareCreator? Creator { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
+            public event EventHandler<RequestSingletonCreationEventArgs>? RequestSingletonCreationInstance;
+            public event EventHandler? Disposing;
+
             public object Create(Type type, IScope? scope)
             {
                 throw new NotImplementedException();

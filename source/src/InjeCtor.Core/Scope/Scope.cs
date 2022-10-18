@@ -15,12 +15,20 @@ namespace InjeCtor.Core.Scope
     {
         #region Private Fields
 
+        private readonly object mSingletonCreationLockObject = new object();
+
         private IReadOnlyDictionary<Type, object>? mGlobalSingletons;
         private readonly ConcurrentDictionary<Type, object> mScopeSingletons = new ConcurrentDictionary<Type, object>();
 
         #endregion
 
         #region IScope
+
+        /// <inheritdoc/>
+        public event EventHandler<RequestSingletonCreationEventArgs>? RequestSingletonCreationInstance;
+
+        /// <inheritdoc/>
+        public event EventHandler? Disposing;
 
         /// <inheritdoc/>
         public ITypeMappingProvider? MappingProvider { get; set; }
@@ -52,12 +60,24 @@ namespace InjeCtor.Core.Scope
                     instance = Creator.Create(type, this);
                     break;
                 case CreationInstruction.Scope:
-                    if (!mScopeSingletons.TryGetValue(type, out instance))
-                    {
-                        instance = Creator.Create(type, this);
-                        mScopeSingletons[type] = instance;
-                    }
-                    break;
+                    object? scopeSingleton = CreateScopeSingleton(type);
+
+                    if (scopeSingleton is null)
+                        throw new InvalidOperationException($"Failed to create scope singleton instance for type '{type}'!");
+
+                    return scopeSingleton;
+                case CreationInstruction.Singleton:
+                    if (mGlobalSingletons?.TryGetValue(type, out object singletonInstance) == true)
+                        return singletonInstance;
+
+                    RequestSingletonCreationEventArgs args = new RequestSingletonCreationEventArgs(type);
+                    RequestSingletonCreationInstance?.Invoke(this, args);
+
+                    if (args.Instance is null)
+                        throw new InvalidOperationException($"Failed to create global singleton for type '{type}'!");
+
+                    // since this instance was created from a creation request no further processing needed!
+                    return args.Instance;
                 default:
                     throw new NotSupportedException($"The creation type '{mapping.CreationInstruction}' is not allowed to be handled by '{typeof(IScope).FullName}'!");
             }
@@ -75,6 +95,8 @@ namespace InjeCtor.Core.Scope
         /// <inheritdoc/>
         public void Dispose()
         {
+            Disposing?.Invoke(this, EventArgs.Empty);
+
             foreach (IDisposable disposable in mScopeSingletons.Values.Where(x => x is IDisposable))
             {
                 disposable.Dispose();
@@ -105,6 +127,31 @@ namespace InjeCtor.Core.Scope
         public void SetSingletons(IReadOnlyDictionary<Type, object> singletons)
         {
             mGlobalSingletons = singletons;
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private object? CreateScopeSingleton(Type type)
+        {
+            if (!mScopeSingletons.TryGetValue(type, out object? instance))
+            {
+                lock (mSingletonCreationLockObject)
+                {
+                    if (!mScopeSingletons.TryGetValue(type, out instance))
+                    {
+                        instance = Creator?.Create(type, this);
+
+                        if (instance != null)
+                            mScopeSingletons[type] = instance;
+
+                        //TODO: furhter processing for injection depending on type informations!
+                    }
+                }
+            }
+
+            return instance;
         }
 
         #endregion
