@@ -20,6 +20,8 @@ namespace InjeCtor.Core.Scope
         private IReadOnlyDictionary<Type, object>? mGlobalSingletons;
         private readonly ConcurrentDictionary<Type, object> mScopeSingletons = new ConcurrentDictionary<Type, object>();
 
+        private IScopeAwareCreator? mCreator;
+
         #endregion
 
         #region IScope
@@ -34,8 +36,21 @@ namespace InjeCtor.Core.Scope
         public ITypeMappingProvider? MappingProvider { get; set; }
 
         /// <inheritdoc/>
-        public IScopeAwareCreator? Creator { get; set; }
-        
+        public IScopeAwareCreator? Creator
+        {
+            get => mCreator;
+            set
+            {
+                if (mCreator != null)
+                    mCreator.RequestSingletonCreationInstance -= MCreator_RequestSingletonCreationInstance;
+
+                mCreator = value;
+
+                if (mCreator != null)
+                    mCreator.RequestSingletonCreationInstance += MCreator_RequestSingletonCreationInstance;
+            }
+        }
+
         /// <inheritdoc/>
         public ITypeInformationProvider? TypeInformationProvider { get; set; }
 
@@ -152,6 +167,40 @@ namespace InjeCtor.Core.Scope
             }
 
             return instance;
+        }
+
+        #endregion
+
+        #region Request Singleton Event Handling
+
+        private void MCreator_RequestSingletonCreationInstance(object sender, RequestSingletonCreationEventArgs e)
+        {
+            if (GetSingleton(e.Type) is null)
+            {
+                lock (mSingletonCreationLockObject)
+                {
+                    object? instance = GetSingleton(e.Type);
+
+                    ITypeMapping? mapping = MappingProvider?.GetTypeMapping(e.Type);
+
+                    if (instance != null)
+                    {
+                        e.Instance = instance;
+                    }
+                    else if (mapping != null)
+                    {
+                        if (mapping.CreationInstruction == CreationInstruction.Singleton)
+                            RequestSingletonCreationInstance?.Invoke(this, e);
+                        else if (mapping.CreationInstruction == CreationInstruction.Scope)
+                        {
+                            // don't pass this scope in this case to prevent looping again to the request singleton event if no instance is already created
+                            e.Instance = Creator?.Create(e.Type);
+                            if (e.Instance != null)
+                                mScopeSingletons[e.Type] = e.Instance;
+                        }
+                    }
+                }
+            }
         }
 
         #endregion

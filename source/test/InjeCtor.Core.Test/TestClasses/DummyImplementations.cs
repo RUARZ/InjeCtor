@@ -95,6 +95,8 @@ namespace InjeCtor.Core.Test.TestClasses
     {
         public ITypeMappingProvider? MappingProvider { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
+        public event EventHandler<RequestSingletonCreationEventArgs>? RequestSingletonCreationInstance;
+
         public object Create(Type type, IScope? scope)
         {
             string typeName = type.FullName;
