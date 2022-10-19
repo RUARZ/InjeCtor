@@ -93,14 +93,6 @@ namespace InjeCtor.Core.Test
         }
 
         [Test]
-        public void Create_MissingTypeMappingProvider_ThrowsInvalidOperationException()
-        {
-            mInjeCtor = new InjeCtor(null, mTypeInformationProvider, mCreator);
-
-            Assert.Throws<InvalidOperationException>(() => mInjeCtor.Create(typeof(ICalculator)));
-        }
-
-        [Test]
         public void Create_MissingMappedType_ThrowsInvalidOperationException()
         {
             Assert.Throws<InvalidOperationException>(() => mInjeCtor.Create<ClassWithoutMappedType>());

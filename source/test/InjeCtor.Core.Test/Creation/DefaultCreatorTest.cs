@@ -37,7 +37,7 @@ namespace InjeCtor.Core.Test.Creation
             mCreator.MappingProvider = mMappingProvider;
 
             mDummyScope = new DummyScope();
-            mDummyScope.Singletons.Add(typeof(Calculator), new Calculator());
+            mDummyScope.Singletons.Add(typeof(ICalculator), new Calculator());
         }
 
         #endregion
@@ -50,17 +50,17 @@ namespace InjeCtor.Core.Test.Creation
             ICalculator calc = mCreator.Create<ICalculator>();
             Assert.IsNotNull(calc);
             Assert.IsInstanceOf<Calculator>(calc);
-            Assert.AreNotSame(mDummyScope.Singletons[typeof(Calculator)], calc);
+            Assert.AreNotSame(mDummyScope.Singletons[typeof(ICalculator)], calc);
 
             Calculator calc2 = mCreator.Create<Calculator>();
             Assert.IsNotNull(calc2);
             Assert.IsInstanceOf<Calculator>(calc2);
-            Assert.AreNotSame(mDummyScope.Singletons[typeof(Calculator)], calc2);
+            Assert.AreNotSame(mDummyScope.Singletons[typeof(ICalculator)], calc2);
             Assert.AreNotSame(calc, calc2);
 
             object calc3 = mCreator.Create(typeof(ICalculator));
             Assert.IsNotNull(calc3);
-            Assert.AreNotSame(mDummyScope.Singletons[typeof(Calculator)], calc3);
+            Assert.AreNotSame(mDummyScope.Singletons[typeof(ICalculator)], calc3);
             Assert.IsInstanceOf<Calculator>(calc3);
             Assert.AreNotSame(calc3, calc2);
             Assert.AreNotSame(calc3, calc);
@@ -68,7 +68,7 @@ namespace InjeCtor.Core.Test.Creation
             object calc4 = mCreator.Create(typeof(Calculator));
             Assert.IsNotNull(calc4);
             Assert.IsInstanceOf<Calculator>(calc4);
-            Assert.AreNotSame(mDummyScope.Singletons[typeof(Calculator)], calc4);
+            Assert.AreNotSame(mDummyScope.Singletons[typeof(ICalculator)], calc4);
             Assert.AreNotSame(calc4, calc3);
             Assert.AreNotSame(calc4, calc2);
             Assert.AreNotSame(calc4, calc);
@@ -84,7 +84,7 @@ namespace InjeCtor.Core.Test.Creation
             Assert.IsNotNull(obj);
             Assert.IsInstanceOf<AbractCreationBaseClass>(obj);
             Assert.IsNotNull(obj.Calculator);
-            Assert.AreNotSame(mDummyScope.Singletons[typeof(Calculator)], obj.Calculator);
+            Assert.AreNotSame(mDummyScope.Singletons[typeof(ICalculator)], obj.Calculator);
             Assert.IsNotNull(obj.Greeter);
             Assert.IsInstanceOf<Calculator>(obj.Calculator);
             Assert.IsInstanceOf<Greeter>(obj.Greeter);
@@ -100,7 +100,7 @@ namespace InjeCtor.Core.Test.Creation
             Assert.IsNotNull(obj);
             Assert.IsInstanceOf<CreationClassWithSomeDefaultPara>(obj);
             Assert.IsNotNull(obj.Calculator);
-            Assert.AreNotSame(mDummyScope.Singletons[typeof(Calculator)], obj.Calculator);
+            Assert.AreNotSame(mDummyScope.Singletons[typeof(ICalculator)], obj.Calculator);
             Assert.IsNotNull(obj.Greeter);
             Assert.IsInstanceOf<Calculator>(obj.Calculator);
             Assert.IsInstanceOf<Greeter>(obj.Greeter);
@@ -119,7 +119,7 @@ namespace InjeCtor.Core.Test.Creation
             Assert.IsNotNull(obj);
             Assert.IsInstanceOf<CreationClassWithSomeDefaultParaAndNullable>(obj);
             Assert.IsNotNull(obj.Calculator);
-            Assert.AreNotSame(mDummyScope.Singletons[typeof(Calculator)], obj.Calculator);
+            Assert.AreNotSame(mDummyScope.Singletons[typeof(ICalculator)], obj.Calculator);
             Assert.IsNotNull(obj.Greeter);
             Assert.IsInstanceOf<Calculator>(obj.Calculator);
             Assert.IsInstanceOf<Greeter>(obj.Greeter);
@@ -131,6 +131,12 @@ namespace InjeCtor.Core.Test.Creation
         [Test]
         public void CreationWithSingletonScope_Success()
         {
+            mMappingProvider = new SimpleTypeMapper();
+            mMappingProvider.Add<ICalculator>().As<Calculator>().AsSingleton();
+            mMappingProvider.Add<IGreeter>().As<Greeter>();
+
+            mCreator.MappingProvider = mMappingProvider;
+
             mMappingProvider.Add<AbractCreationBaseClass>().As<CreationClassWithSomeDefaultParaAndNullable>();
 
             CreationClassWithSomeDefaultParaAndNullable? obj = mCreator.Create<AbractCreationBaseClass>(mDummyScope) as CreationClassWithSomeDefaultParaAndNullable;
@@ -140,7 +146,7 @@ namespace InjeCtor.Core.Test.Creation
             Assert.IsNotNull(obj.Calculator);
             Assert.IsNotNull(obj.Greeter);
             Assert.IsInstanceOf<Calculator>(obj.Calculator);
-            Assert.AreSame(mDummyScope.Singletons[typeof(Calculator)], obj.Calculator);
+            Assert.AreSame(mDummyScope.Singletons[typeof(ICalculator)], obj.Calculator);
             Assert.IsInstanceOf<Greeter>(obj.Greeter);
             Assert.IsNull(obj.Obj);
             Assert.AreEqual(13, obj.Number);

@@ -17,13 +17,11 @@ namespace InjeCtor.Core
     {
         #region Private Fields
 
-        private readonly object mSingletonCreationLockObject = new object();
-
         private readonly ITypeInformationProvider mTypeInformationProvider;
         private readonly IScopeAwareCreator mCreator;
 
         private ITypeMappingProvider mMappingProvider;
-        private IScope? mScope;
+        private IScope mScope;
         private ConcurrentBag<IScope>? mScopes = new ConcurrentBag<IScope>();
 
         private readonly ConcurrentDictionary<Type, object> mGlobalSingletons = new ConcurrentDictionary<Type, object>();
@@ -46,7 +44,7 @@ namespace InjeCtor.Core
         /// </summary>
         /// <param name="typeMapper">Implementation of <see cref="ITypeMapper"/> to use.</param>
         public InjeCtor(ITypeMapper typeMapper)
-            :this(typeMapper, new TypeInformationBuilder(), new DefaultCreator())
+            : this(typeMapper, new TypeInformationBuilder(), new DefaultCreator())
         {
 
         }
@@ -58,7 +56,7 @@ namespace InjeCtor.Core
         /// <param name="typeMapper">Implementation of <see cref="ITypeMapper"/> to use.</param>
         /// <param name="typeInfoProvider">Implementation of <see cref="ITypeInformationProvider"/> to use.</param>
         public InjeCtor(ITypeMapper typeMapper, ITypeInformationProvider typeInfoProvider)
-            :this(typeMapper, typeInfoProvider, new DefaultCreator())
+            : this(typeMapper, typeInfoProvider, new DefaultCreator())
         {
 
         }
@@ -79,10 +77,10 @@ namespace InjeCtor.Core
             mCreator.MappingProvider = mMappingProvider;
             mCreator.SetSingletons(mGlobalSingletons);
 
-            ITypeMapping? mapping = Mapper?.GetTypeMapping<IScope>();
+            ITypeMapping? mapping = Mapper.GetTypeMapping<IScope>();
 
             if (mapping is null || mapping.MappedType is null)
-                Mapper?.Add<IScope>().As<Scope.Scope>(); // in case no other implementation defined then use default one
+                Mapper.Add<IScope>().As<Scope.Scope>(); // in case no other implementation defined then use default one
 
             // setup the default scope
             mScope = CreateAndSetupScope();
@@ -108,31 +106,7 @@ namespace InjeCtor.Core
         /// <inheritdoc/>
         public object Create(Type type)
         {
-            ITypeMapping? mapping = MappingProvider?.GetTypeMapping(type);
-
-            if (mapping is null)
-                throw new InvalidOperationException($"No mapping found for the type '{type.FullName}'!");
-
-            if (mapping.MappedType is null)
-                throw new InvalidOperationException($"The mapped type is null for '{mapping.SourceType.FullName}'!");
-
-            object instance;
-            switch (mapping.CreationInstruction)
-            {
-                case CreationInstruction.Always:
-                    instance = mCreator.Create(type);
-                    break;
-                case CreationInstruction.Scope:
-                    instance = mCreator.Create(type, mScope);
-                    break;
-                case CreationInstruction.Singleton:
-                    return CreateSingletonInstance(type);
-                default:
-                    throw new NotSupportedException($"The creation type '{mapping.CreationInstruction}' seems to not be implemented yet!");
-            }
-
-            //TODO: furhter processing for injection depending on type informations!
-            return instance;
+            return mScope.Create(type);
         }
 
         /// <inheritdoc/>
@@ -201,16 +175,15 @@ namespace InjeCtor.Core
         {
             if (!mGlobalSingletons.TryGetValue(type, out var instance))
             {
-                lock (mSingletonCreationLockObject)
-                {
-                    // a second check in case a other thread created in the mean time an instance for this type while waiting for the lock.
-                    if (!mGlobalSingletons.TryGetValue(type, out instance))
-                    {
-                        instance = mCreator.Create(type);
-                        mGlobalSingletons[type] = instance;
+                instance = mCreator.Create(type);
 
-                        //TODO: furhter processing for injection depending on type informations!
-                    }
+                if (mGlobalSingletons.TryAdd(type, instance))
+                {
+                    //TODO: furhter processing for injection depending on type informations!   
+                }
+                else if (!mGlobalSingletons.TryGetValue(type, out instance))
+                {
+                    throw new InvalidOperationException($"Failed to add new created instance but also can't get a already registered instance for type '{type}'!");
                 }
             }
 

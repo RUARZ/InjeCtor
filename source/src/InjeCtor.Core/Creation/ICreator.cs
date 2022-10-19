@@ -58,6 +58,25 @@ namespace InjeCtor.Core.Creation
         /// <param name="scope">The <see cref="IScope"/> instance to use for checking of singletons.</param>
         /// <returns>The created type.</returns>
         T Create<T>(IScope? scope);
+
+
+        /// <summary>
+        /// Creates the object for the passed <paramref name="type"/> directly without checking / requesting singleton instances.
+        /// Needed for e.g. the first creation for a singleton which is, at the point of the request, not in existence yet.
+        /// </summary>
+        /// <param name="type">The <see cref="Type"/> to create.</param>
+        /// <param name="scope">Instance of <see cref="IScope"/> if the scope is needed for later needed parameters for other creations.</param>
+        /// <returns>The created object.</returns>
+        object CreateDirect(Type type, IScope? scope);
+
+        /// <summary>
+        /// Creates the object for the passed <typeparamref name="T"/> directly without checking / requesting singleton instances.
+        /// Needed for e.g. the first creation for a singleton which is, at the point of the request, not in existence yet.
+        /// </summary>
+        /// <typeparam name="T">The type to create.</typeparam>
+        /// <param name="scope">Instance of <see cref="IScope"/> if the scope is needed for later needed parameters for other creations.</param>
+        /// <returns>The created object.</returns>
+        T CreateDirect<T>(IScope? scope);
     }
 
     /// <summary>
