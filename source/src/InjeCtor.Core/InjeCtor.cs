@@ -22,7 +22,7 @@ namespace InjeCtor.Core
 
         private ITypeMappingProvider mMappingProvider;
         private IScope mScope;
-        private ConcurrentBag<IScope>? mScopes = new ConcurrentBag<IScope>();
+        private ConcurrentDictionary<IScope, IScope>? mScopes = new ConcurrentDictionary<IScope, IScope>();
 
         private readonly ConcurrentDictionary<Type, object> mGlobalSingletons = new ConcurrentDictionary<Type, object>();
 
@@ -120,9 +120,7 @@ namespace InjeCtor.Core
         {
             IScope scope = CreateAndSetupScope();
 
-            //TODO: update to get informations if the scope was disposed already to remove it from the
-            // mScopes bag!
-            mScopes?.Add(scope);
+            mScopes?.TryAdd(scope, scope);
             return scope;
         }
 
@@ -131,7 +129,7 @@ namespace InjeCtor.Core
         {
             if (mScopes != null)
             {
-                foreach (IScope scope in mScopes)
+                foreach (IScope scope in mScopes.Values)
                 {
                     scope.Dispose();
                 }
@@ -153,6 +151,12 @@ namespace InjeCtor.Core
         public void SetSingletons(IReadOnlyDictionary<Type, object> singletons)
         {
             throw new InvalidOperationException($"Setting the singletons for '{nameof(InjeCtor)}' is not allowed!");
+        }
+
+        /// <inheritdoc/>
+        public IEnumerable<IScope> GetScopes()
+        {
+            return mScopes?.Values ?? Enumerable.Empty<IScope>();
         }
 
         #endregion
@@ -207,6 +211,8 @@ namespace InjeCtor.Core
 
             scope.Disposing -= Scope_Disposing;
             scope.RequestSingletonCreationInstance -= Scope_RequestSingletonCreationInstance;
+
+            mScopes?.TryRemove(scope, out _);
         }
 
         #endregion

@@ -22,5 +22,11 @@ namespace InjeCtor.Core
         /// </summary>
         /// <returns>The new created <see cref="IScope"/>.</returns>
         public IScope CreateScope();
+
+        /// <summary>
+        /// Returns an <see cref="IEnumerable{T}"/> of <see cref="IScope"/> of all created scopes which are not disposed yet except the default scope!
+        /// </summary>
+        /// <returns><see cref="IEnumerable{T}"/> of all <see cref="IScope"/> which were created manually but not disposed yet.</returns>
+        public IEnumerable<IScope> GetScopes();
     }
 }
