@@ -93,7 +93,7 @@ namespace InjeCtor.Core.Test.TestClasses
 
     class DummyCreator : IScopeAwareCreator
     {
-        public ITypeMappingProvider? MappingProvider { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public ITypeMappingProvider? MappingProvider { get; set; }
 
         public event EventHandler<RequestSingletonCreationEventArgs>? RequestSingletonCreationInstance;
 
@@ -134,11 +134,23 @@ namespace InjeCtor.Core.Test.TestClasses
             CreatedSingletons = singletons;
         }
 
+        public object CreateDirect(Type type, IScope? scope)
+        {
+            return Create(type, scope);
+        }
+
+        public T CreateDirect<T>(IScope? scope)
+        {
+            return (T)Create(typeof(T), scope);
+        }
+
         public IReadOnlyDictionary<Type, object> CreatedSingletons { get; private set; }
     }
 
     class DummyScope : IScope
     {
+        private Dictionary<Type, object> mScopeSingletons = new Dictionary<Type, object>();
+
         public static int CreationCounter { get; private set; }
         public static int DisposeCounter { get; private set; }
 
@@ -162,12 +174,26 @@ namespace InjeCtor.Core.Test.TestClasses
 
         public object Create(Type type)
         {
-            return Creator.Create(type);
+            bool isSingleton = MappingProvider.GetTypeMapping(type).CreationInstruction == CreationInstruction.Singleton;
+
+            object instance;
+            if (!isSingleton)
+            {
+                instance = Creator.Create(type);
+            }
+            else
+            {
+                RequestSingletonCreationEventArgs args = new RequestSingletonCreationEventArgs(type);
+                RequestSingletonCreationInstance?.Invoke(this, args);
+                instance = args.Instance;
+            }
+
+            return instance;
         }
 
         public T Create<T>()
         {
-            return Creator.Create<T>();
+            return (T)Create(typeof(T));
         }
 
         public void Dispose()

@@ -51,8 +51,7 @@ namespace InjeCtor.Core.Creation
         /// <inheritdoc/>
         public object Create(Type type, IScope? scope)
         {
-            ITypeMappingProvider providerToUse = GetTypeMappingProvider();
-            return Create(type, providerToUse, scope);
+            return CreateInternal(type, scope, false);
         }
 
         /// <inheritdoc/>
@@ -61,16 +60,34 @@ namespace InjeCtor.Core.Creation
             return (T)Create(typeof(T), scope);
         }
 
+        /// <inheritdoc/>
+        public object CreateDirect(Type type, IScope? scope)
+        {
+            return CreateInternal(type, scope, true);
+        }
+
+        /// <inheritdoc/>
+        public T CreateDirect<T>(IScope? scope)
+        {
+            return (T)CreateDirect(typeof(T), scope);
+        }
+
         #endregion
 
         #region Private Methods
 
-        private object Create(Type type, ITypeMappingProvider providerToUse, IScope? scope)
+        private object CreateInternal(Type type, IScope? scope, bool createDirect)
+        {
+            ITypeMappingProvider providerToUse = GetTypeMappingProvider();
+            return Create(type, providerToUse, scope, createDirect);
+        }
+
+        private object Create(Type type, ITypeMappingProvider providerToUse, IScope? scope, bool createDirect)
         {
             ITypeMapping? mapping = providerToUse.GetTypeMapping(type);
             Type creationType = mapping?.MappedType ?? type;
 
-            if (mapping != null && scope != null && mapping.CreationInstruction != CreationInstruction.Always)
+            if (!createDirect && mapping != null && scope != null && mapping.CreationInstruction != CreationInstruction.Always)
             {
                 object? singleton = scope.GetSingleton(type);
 
@@ -118,7 +135,7 @@ namespace InjeCtor.Core.Creation
                 }
                 else
                 {
-                    parameters[i] = Create(mapping.MappedType, providerToUse, scope);
+                    parameters[i] = Create(pInfo.ParameterType, providerToUse, scope, false);
                 }
             }
 

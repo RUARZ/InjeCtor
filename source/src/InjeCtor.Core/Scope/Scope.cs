@@ -15,8 +15,6 @@ namespace InjeCtor.Core.Scope
     {
         #region Private Fields
 
-        private readonly object mSingletonCreationLockObject = new object();
-
         private IReadOnlyDictionary<Type, object>? mGlobalSingletons;
         private readonly ConcurrentDictionary<Type, object> mScopeSingletons = new ConcurrentDictionary<Type, object>();
 
@@ -152,18 +150,14 @@ namespace InjeCtor.Core.Scope
         {
             if (!mScopeSingletons.TryGetValue(type, out object? instance))
             {
-                lock (mSingletonCreationLockObject)
+                instance = Creator?.Create(type, this);
+
+                if (instance != null && mScopeSingletons.TryAdd(type, instance))
                 {
-                    if (!mScopeSingletons.TryGetValue(type, out instance))
-                    {
-                        instance = Creator?.Create(type, this);
-
-                        if (instance != null)
-                            mScopeSingletons[type] = instance;
-
-                        //TODO: furhter processing for injection depending on type informations!
-                    }
+                    //TODO: furhter processing for injection depending on type informations!
                 }
+                else if (!mScopeSingletons.TryGetValue(type, out instance))
+                    throw new InvalidOperationException($"Failed to add / get scope singleton for type '{type}'!");
             }
 
             return instance;
@@ -175,32 +169,35 @@ namespace InjeCtor.Core.Scope
 
         private void MCreator_RequestSingletonCreationInstance(object sender, RequestSingletonCreationEventArgs e)
         {
-            if (GetSingleton(e.Type) is null)
+            ITypeMapping? mapping = MappingProvider?.GetTypeMapping(e.Type);
+
+            if (mapping is null)
+                throw new InvalidOperationException($"No mapping found for type '{e.Type}'!");
+
+            if (mapping.CreationInstruction == CreationInstruction.Singleton)
             {
-                lock (mSingletonCreationLockObject)
-                {
-                    object? instance = GetSingleton(e.Type);
-
-                    ITypeMapping? mapping = MappingProvider?.GetTypeMapping(e.Type);
-
-                    if (instance != null)
-                    {
-                        e.Instance = instance;
-                    }
-                    else if (mapping != null)
-                    {
-                        if (mapping.CreationInstruction == CreationInstruction.Singleton)
-                            RequestSingletonCreationInstance?.Invoke(this, e);
-                        else if (mapping.CreationInstruction == CreationInstruction.Scope)
-                        {
-                            // don't pass this scope in this case to prevent looping again to the request singleton event if no instance is already created
-                            e.Instance = Creator?.Create(e.Type);
-                            if (e.Instance != null)
-                                mScopeSingletons[e.Type] = e.Instance;
-                        }
-                    }
-                }
+                RequestSingletonCreationInstance?.Invoke(sender, e);
+                return;
             }
+
+            if (mapping.CreationInstruction == CreationInstruction.Always)
+                throw new InvalidOperationException($"Singleton request for type '{e.Type}' with creation instruction '{nameof(CreationInstruction.Always)}' is not valid!");
+
+            if (mScopeSingletons.TryGetValue(e.Type, out object? instance))
+            {
+                e.Instance = instance;
+                return;
+            }
+
+            instance = Creator?.CreateDirect(e.Type, this);
+
+            if (instance is null)
+                throw new InvalidCastException($"Failed to create instance for '{e.Type}'!");
+
+            if (!mScopeSingletons.TryAdd(e.Type, instance) && !mScopeSingletons.TryGetValue(e.Type, out instance))
+                throw new InvalidOperationException($"Failed to add / get scope singleton for type '{e.Type}'!");
+
+            e.Instance = instance;
         }
 
         #endregion
