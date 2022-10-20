@@ -35,12 +35,15 @@ namespace InjeCtor.Core.Registration
         public CreationInstruction CreationInstruction { get; protected set; }
 
         /// <inheritdoc/>
-        public ITypeMapping<T> As<T1>() where T1 : T
+        public object? Instance { get; protected set; }
+
+        /// <inheritdoc/>
+        public ITypeMapping<T> As<TMapped>() where TMapped : T
         {
             if (MappedType != null)
                 throw new InvalidOperationException("The registration is already set to a target type!");
 
-            MappedType = typeof(T1);
+            MappedType = typeof(TMapped);
 
             RaiseMappingChanged();
             return this;
@@ -50,6 +53,21 @@ namespace InjeCtor.Core.Registration
         public ITypeMapping<T> AsSingleton()
         {
             CreationInstruction = CreationInstruction.Singleton;
+            return this;
+        }
+
+        /// <inheritdoc/>
+        public ITypeMapping<T> AsSingleton<TMapped>(TMapped instance) where TMapped : T
+        {
+            if (MappedType != null)
+                throw new InvalidOperationException("The registration is already set to a target type!");
+
+            CreationInstruction = CreationInstruction.Singleton;
+            Instance = instance;
+
+            MappedType = typeof(TMapped);
+
+            RaiseMappingChanged();
             return this;
         }
 
@@ -66,7 +84,6 @@ namespace InjeCtor.Core.Registration
             CreationInstruction = CreationInstruction.Always;
             return this;
         }
-
 
         #endregion
 

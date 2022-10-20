@@ -84,6 +84,22 @@ namespace InjeCtor.Core.Test.IntegrationTests
         }
 
         [Test]
+        public void Create_SingletonWithSetSingletonInstance_PassedSingletonUsed()
+        {
+            int[] myIntArray = new int[] { 1, 2, 3, 4, 5 };
+            mInjeCtor.Mapper.Add<IEnumerable<int>>().AsSingleton(myIntArray);
+
+            var firstObject = mInjeCtor.Create<IEnumerable<int>>();
+            var secondObject = mInjeCtor.Create<IEnumerable<int>>();
+
+            Assert.That(firstObject, Is.Not.Null);
+            Assert.That(firstObject, Is.InstanceOf<IEnumerable<int>>());
+            Assert.That(secondObject, Is.Not.Null);
+            Assert.That(secondObject, Is.InstanceOf<IEnumerable<int>>());
+            Assert.That(firstObject, Is.SameAs(secondObject));
+        }
+
+        [Test]
         public void Create_ScopeSingletonsFromDifferentScopes_SingletonWithinScopesButDifferentInOtherScope()
         {
             void AssertInstanceOfCalculator(object instance)

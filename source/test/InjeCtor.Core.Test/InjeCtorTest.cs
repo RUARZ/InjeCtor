@@ -93,6 +93,25 @@ namespace InjeCtor.Core.Test
         }
 
         [Test]
+        public void Create_SingletonWithPassedInstance_PassedInstanceUsed()
+        {
+            SingletonClass singleton = new SingletonClass();
+            mTypeMapper.SetDirectSingleton(typeof(BaseClassForSingleton), singleton);
+
+            var createdObject = mInjeCtor.Create<BaseClassForSingleton>();
+
+            Assert.That(createdObject, Is.Not.Null);
+            Assert.That(createdObject, Is.InstanceOf<BaseClassForSingleton>());
+            Assert.That(createdObject, Is.InstanceOf<SingletonClass>());
+            Assert.That(createdObject, Is.SameAs(mInjeCtor.Create<BaseClassForSingleton>()));
+            Assert.That(singleton, Is.SameAs(mInjeCtor.Create<BaseClassForSingleton>()));
+            Assert.That(createdObject, Is.SameAs(singleton));
+            Assert.That(SingletonClass.CreationCounter, Is.EqualTo(1));
+            Assert.That(mCreator.CreatedSingletons.Count, Is.EqualTo(1));
+            Assert.That(mCreator.CreatedSingletons[typeof(BaseClassForSingleton)], Is.InstanceOf(typeof(SingletonClass)));
+        }
+
+        [Test]
         public void Create_MissingMappedType_ThrowsInvalidOperationException()
         {
             Assert.Throws<InvalidOperationException>(() => mInjeCtor.Create<ClassWithoutMappedType>());

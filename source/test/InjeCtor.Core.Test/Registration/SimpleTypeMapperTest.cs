@@ -36,12 +36,8 @@ namespace InjeCtor.Core.Test.Registration
             IReadOnlyList<ITypeMapping> items = mTypeMapper.GetTypeMappings();
 
             Assert.AreEqual(2, items.Count);
-            Assert.AreEqual(typeof(ICalculator), items[0].SourceType);
-            Assert.AreEqual(typeof(Calculator), items[0].MappedType);
-            Assert.AreEqual(CreationInstruction.Always, items[0].CreationInstruction);
-            Assert.AreEqual(typeof(IGreeter), items[1].SourceType);
-            Assert.AreEqual(typeof(Greeter), items[1].MappedType);
-            Assert.AreEqual(CreationInstruction.Always, items[1].CreationInstruction);
+            AssertTypeMapping(items[0], typeof(ICalculator), typeof(Calculator), CreationInstruction.Always);
+            AssertTypeMapping(items[1], typeof(IGreeter), typeof(Greeter), CreationInstruction.Always);
         }
 
         [Test]
@@ -60,19 +56,11 @@ namespace InjeCtor.Core.Test.Registration
 
             var item = mTypeMapper.GetTypeMapping<ICalculator>();
 
-            AssertMapping(item);
+            AssertTypeMapping(item, typeof(ICalculator), typeof(Calculator), CreationInstruction.Always);
 
             item = mTypeMapper.GetTypeMapping(typeof(ICalculator));
 
-            AssertMapping(item);
-
-            void AssertMapping(ITypeMapping? mapping)
-            {
-                Assert.IsNotNull(mapping);
-                Assert.AreEqual(typeof(ICalculator), mapping.SourceType);
-                Assert.AreEqual(typeof(Calculator), mapping.MappedType);
-                Assert.AreEqual(CreationInstruction.Always, mapping.CreationInstruction);
-            }
+            AssertTypeMapping(item, typeof(ICalculator), typeof(Calculator), CreationInstruction.Always);
         }
 
         [Test]
@@ -84,12 +72,24 @@ namespace InjeCtor.Core.Test.Registration
             IReadOnlyList<ITypeMapping> items = mTypeMapper.GetTypeMappings();
 
             Assert.AreEqual(2, items.Count);
-            Assert.AreEqual(typeof(ICalculator), items[0].SourceType);
-            Assert.AreEqual(typeof(Calculator), items[0].MappedType);
-            Assert.AreEqual(CreationInstruction.Scope, items[0].CreationInstruction);
-            Assert.AreEqual(typeof(IGreeter), items[1].SourceType);
-            Assert.AreEqual(typeof(Greeter), items[1].MappedType);
-            Assert.AreEqual(CreationInstruction.Singleton, items[1].CreationInstruction);
+            AssertTypeMapping(items[0], typeof(ICalculator), typeof(Calculator), CreationInstruction.Scope);
+            AssertTypeMapping(items[1], typeof(IGreeter), typeof(Greeter), CreationInstruction.Singleton);
+        }
+
+        [Test]
+        public void Add_WithPassedSingletonInstance_Successful()
+        {
+            Calculator calc = new Calculator();
+            Greeter greeter = new Greeter();
+
+            mTypeMapper.Add<ICalculator>().AsSingleton(calc);
+            mTypeMapper.Add<IGreeter>().AsSingleton(greeter);
+
+            IReadOnlyList<ITypeMapping> items = mTypeMapper.GetTypeMappings();
+
+            Assert.AreEqual(2, items.Count);
+            AssertTypeMapping(items[0], typeof(ICalculator), typeof(Calculator), CreationInstruction.Singleton, calc);
+            AssertTypeMapping(items[1], typeof(IGreeter), typeof(Greeter), CreationInstruction.Singleton, greeter);
         }
 
         [Test]
@@ -100,6 +100,23 @@ namespace InjeCtor.Core.Test.Registration
             var item = mTypeMapper.GetTypeMapping<IGreeter>();
 
             Assert.IsNull(item);
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private void AssertTypeMapping(ITypeMapping mapping, Type sourceType, Type mappedType, CreationInstruction creationInstruction, object? instance = null)
+        {
+            Assert.That(mapping, Is.Not.Null);
+            Assert.That(mapping.SourceType, Is.EqualTo(sourceType));
+            Assert.That(mapping.MappedType, Is.EqualTo(mappedType));
+            Assert.That(mapping.CreationInstruction, Is.EqualTo(creationInstruction));
+
+            if (instance == null)
+                Assert.That(mapping.Instance, Is.Null);
+            else
+                Assert.That(mapping.Instance, Is.SameAs(instance));
         }
 
         #endregion

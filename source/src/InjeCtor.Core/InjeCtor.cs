@@ -179,7 +179,11 @@ namespace InjeCtor.Core
         {
             if (!mGlobalSingletons.TryGetValue(type, out var instance))
             {
-                instance = mCreator.Create(type);
+                ITypeMapping? mapping = Mapper.GetTypeMapping(type);
+                if (mapping != null && mapping.CreationInstruction == CreationInstruction.Singleton && mapping.Instance != null)
+                    instance = mapping.Instance;
+                else
+                    instance = mCreator.Create(type);
 
                 if (mGlobalSingletons.TryAdd(type, instance))
                 {

@@ -57,15 +57,21 @@ namespace InjeCtor.Core.Registration
         }
 
         /// <inheritdoc/>
-        public new IDynamicTypeMapping<T> As<T1>() where T1 : T
+        public new IDynamicTypeMapping<T> As<TMapped>() where TMapped : T
         {
-            return (IDynamicTypeMapping<T>)base.As<T1>();
+            return (IDynamicTypeMapping<T>)base.As<TMapped>();
         }
 
         /// <inheritdoc/>
         IDynamicTypeMapping<T> IDynamicTypeMapping<T>.AsSingleton()
         {
             return (IDynamicTypeMapping<T>)base.AsSingleton();
+        }
+
+        /// <inheritdoc/>
+        public new IDynamicTypeMapping<T> AsSingleton<TMapped>(TMapped instance) where TMapped : T
+        {
+            return (IDynamicTypeMapping<T>)base.AsSingleton(instance);
         }
 
         /// <inheritdoc/>

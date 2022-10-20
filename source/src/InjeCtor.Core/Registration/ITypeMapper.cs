@@ -88,6 +88,12 @@ namespace InjeCtor.Core.Registration
         Type? MappedType { get; }
 
         /// <summary>
+        /// The instance to use if the <see cref="SourceType"/> is requested. Only used if
+        /// <see cref="CreationInstruction"/> is set to <see cref="CreationInstruction.Singleton"/>!
+        /// </summary>
+        object? Instance { get; }
+
+        /// <summary>
         /// The set <see cref="CreationInstruction"/>.
         /// </summary>
         CreationInstruction CreationInstruction { get; }
@@ -115,6 +121,14 @@ namespace InjeCtor.Core.Registration
         /// <typeparam name="T">The type which should be used.</typeparam>
         /// <returns>Own instance for further processing.</returns>
         ITypeMapping<TDef> As<T>() where T : TDef;
+
+        /// <summary>
+        /// Set's the type to use for the mapping and set's it's singleton to the passed <paramref name="instance"/>.
+        /// </summary>
+        /// <typeparam name="T">The type which should be used.</typeparam>
+        /// <param name="instance">The instance of <typeparamref name="T"/> to use as singleton.</param>
+        /// <returns>Own instance for furhter processing.</returns>
+        ITypeMapping<TDef> AsSingleton<T>(T instance) where T : TDef;
 
         /// <summary>
         /// Set's the <see cref="CreationInstruction"/> to <see cref="CreationInstruction.Singleton"/>;
@@ -173,6 +187,14 @@ namespace InjeCtor.Core.Registration
         /// <typeparam name="T">The type which should be used.</typeparam>
         /// <returns>Own instance for further processing.</returns>
         new IDynamicTypeMapping<TDef> As<T>() where T : TDef;
+
+        /// <summary>
+        /// Set's the type to use for the mapping and set's it's singleton to the passed <paramref name="instance"/>.
+        /// </summary>
+        /// <typeparam name="T">The type which should be used.</typeparam>
+        /// <param name="instance">The instance of <typeparamref name="T"/> to use as singleton.</param>
+        /// <returns>Own instance for furhter processing.</returns>
+        new IDynamicTypeMapping<TDef> AsSingleton<T>(T instance) where T : TDef;
 
         /// <summary>
         /// Set's the <see cref="CreationInstruction"/> to <see cref="CreationInstruction.Singleton"/>;

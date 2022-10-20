@@ -18,15 +18,24 @@ namespace InjeCtor.Core.Test.TestClasses
         public Type? MappedType { get; set; }
 
         public CreationInstruction CreationInstruction { get; set; }
+
+        public object? Instance { get; set; }
     }
 
     class DummyTypeMapper : ITypeMapper
     {
         private CreationInstruction? mInstruction;
 
+        private Dictionary<string, object> mDirectSingletons = new Dictionary<string, object>();
+
         public void SetCreationInstruction(CreationInstruction instruction)
         {
             mInstruction = instruction;
+        }
+
+        public void SetDirectSingleton(Type type, object instance)
+        {
+            mDirectSingletons.Add(type.FullName, instance);
         }
 
         public ITypeMapping<T> Add<T>()
@@ -68,6 +77,9 @@ namespace InjeCtor.Core.Test.TestClasses
 
             if (mInstruction.HasValue)
                 mapping.CreationInstruction = mInstruction.Value;
+
+            if (mDirectSingletons.TryGetValue(typeName, out var instance))
+                mapping.Instance = instance;
 
             return mapping;
         }
