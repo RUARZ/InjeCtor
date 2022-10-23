@@ -65,7 +65,9 @@ namespace InjeCtor.Core.Registration
         /// <inheritdoc/>
         IDynamicTypeMapping<T> IDynamicTypeMapping<T>.AsSingleton()
         {
-            return (IDynamicTypeMapping<T>)base.AsSingleton();
+            CreationInstruction = CreationInstruction.Singleton;
+
+            return this;
         }
 
         /// <inheritdoc/>
@@ -77,13 +79,9 @@ namespace InjeCtor.Core.Registration
         /// <inheritdoc/>
         IDynamicTypeMapping<T> IDynamicTypeMapping<T>.AsScopeSingleton()
         {
-            return (IDynamicTypeMapping<T>)base.AsScopeSingleton();
-        }
+            CreationInstruction = CreationInstruction.Scope;
 
-        /// <inheritdoc/>
-        IDynamicTypeMapping<T> IDynamicTypeMapping<T>.AsTransient()
-        {
-            return (IDynamicTypeMapping<T>)base.AsTransient();
+            return this;
         }
 
         #endregion

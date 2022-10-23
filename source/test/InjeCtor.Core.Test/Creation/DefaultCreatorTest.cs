@@ -132,7 +132,7 @@ namespace InjeCtor.Core.Test.Creation
         public void CreationWithSingletonScope_Success()
         {
             mMappingProvider = new SimpleTypeMapper();
-            mMappingProvider.Add<ICalculator>().As<Calculator>().AsSingleton();
+            mMappingProvider.Add<ICalculator>().AsSingleton<Calculator>();
             mMappingProvider.Add<IGreeter>().As<Greeter>();
 
             mCreator.MappingProvider = mMappingProvider;

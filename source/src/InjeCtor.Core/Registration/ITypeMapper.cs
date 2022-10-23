@@ -116,7 +116,7 @@ namespace InjeCtor.Core.Registration
     public interface ITypeMapping<TDef> : ITypeMapping
     {
         /// <summary>
-        /// Set's the type which should be used for the mapping as mapped type.
+        /// Set's the type which should be used for the mapping as mapped type with creation instruction <see cref="CreationInstruction.Always"/>.
         /// </summary>
         /// <typeparam name="T">The type which should be used.</typeparam>
         /// <returns>Own instance for further processing.</returns>
@@ -131,22 +131,18 @@ namespace InjeCtor.Core.Registration
         ITypeMapping<TDef> AsSingleton<T>(T instance) where T : TDef;
 
         /// <summary>
-        /// Set's the <see cref="CreationInstruction"/> to <see cref="CreationInstruction.Singleton"/>;
+        /// Set's the type which should be used for the mapping as mapped type with creation instruction <see cref="CreationInstruction.Singleton"/>.
         /// </summary>
+        /// <typeparam name="T">The type which should be used.</typeparam>
         /// <returns>Own instance for further processing.</returns>
-        ITypeMapping<TDef> AsSingleton();
+        ITypeMapping<TDef> AsSingleton<T>() where T : TDef;
 
         /// <summary>
-        /// Set's the <see cref="CreationInstruction"/> to <see cref="CreationInstruction.Scope"/>;
+        /// Set's the type which should be used for the mapping as mapped type with creation instruction <see cref="CreationInstruction.Scope"/>.
         /// </summary>
+        /// <typeparam name="T">The type which should be used.</typeparam>
         /// <returns>Own instance for further processing.</returns>
-        ITypeMapping<TDef> AsScopeSingleton();
-
-        /// <summary>
-        /// Set's the <see cref="CreationInstruction"/> to <see cref="CreationInstruction.Always"/>;
-        /// </summary>
-        /// <returns>Own instance for further processing.</returns>
-        ITypeMapping<TDef> AsTransient();
+        ITypeMapping<TDef> AsScopeSingleton<T>() where T: TDef;
     }
 
     /// <summary>
@@ -182,36 +178,22 @@ namespace InjeCtor.Core.Registration
         bool Resolve(params Assembly[] assemblies);
 
         /// <summary>
-        /// Set's the type which should be used for the mapping as mapped type.
+        /// Set's the type which should be used for the mapping as mapped typewith creation instruction <see cref="CreationInstruction.Always"/>.
         /// </summary>
         /// <typeparam name="T">The type which should be used.</typeparam>
         /// <returns>Own instance for further processing.</returns>
         new IDynamicTypeMapping<TDef> As<T>() where T : TDef;
 
         /// <summary>
-        /// Set's the type to use for the mapping and set's it's singleton to the passed <paramref name="instance"/>.
+        /// Sets the creation instruction to <see cref="CreationInstruction.Singleton"/>.
         /// </summary>
-        /// <typeparam name="T">The type which should be used.</typeparam>
-        /// <param name="instance">The instance of <typeparamref name="T"/> to use as singleton.</param>
-        /// <returns>Own instance for furhter processing.</returns>
-        new IDynamicTypeMapping<TDef> AsSingleton<T>(T instance) where T : TDef;
+        /// <returns></returns>
+        IDynamicTypeMapping<TDef> AsSingleton();
 
         /// <summary>
-        /// Set's the <see cref="CreationInstruction"/> to <see cref="CreationInstruction.Singleton"/>;
+        /// Sets the creation instruction to <see cref="CreationInstruction.Scope"/>.
         /// </summary>
         /// <returns>Own instance for further processing.</returns>
-        new IDynamicTypeMapping<TDef> AsSingleton();
-
-        /// <summary>
-        /// Set's the <see cref="CreationInstruction"/> to <see cref="CreationInstruction.Scope"/>;
-        /// </summary>
-        /// <returns>Own instance for further processing.</returns>
-        new IDynamicTypeMapping<TDef> AsScopeSingleton();
-
-        /// <summary>
-        /// Set's the <see cref="CreationInstruction"/> to <see cref="CreationInstruction.Always"/>;
-        /// </summary>
-        /// <returns>Own instance for further processing.</returns>
-        new IDynamicTypeMapping<TDef> AsTransient();
+        IDynamicTypeMapping<TDef> AsScopeSingleton();
     }
 }

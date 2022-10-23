@@ -27,8 +27,8 @@ namespace InjeCtor.Core.Test.IntegrationTests
             mInjeCtor = new InjeCtor();
 
             mInjeCtor.Mapper.Add<IGreeter>().As<Greeter>();
-            mInjeCtor.Mapper.Add<ICalculator>().As<Calculator>().AsScopeSingleton();
-            mInjeCtor.Mapper.Add<BaseClassForSingleton>().As<SingletonClass>().AsSingleton();
+            mInjeCtor.Mapper.Add<ICalculator>().AsScopeSingleton<Calculator>();
+            mInjeCtor.Mapper.Add<BaseClassForSingleton>().AsSingleton<SingletonClass>();
 
             SingletonClass.ResetCounter();
         }

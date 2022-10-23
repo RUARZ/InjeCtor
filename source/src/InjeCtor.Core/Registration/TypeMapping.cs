@@ -50,9 +50,12 @@ namespace InjeCtor.Core.Registration
         }
 
         /// <inheritdoc/>
-        public ITypeMapping<T> AsSingleton()
+        public ITypeMapping<T> AsSingleton<TMapped>() where TMapped : T
         {
             CreationInstruction = CreationInstruction.Singleton;
+
+            As<TMapped>();
+
             return this;
         }
 
@@ -72,16 +75,12 @@ namespace InjeCtor.Core.Registration
         }
 
         /// <inheritdoc/>
-        public ITypeMapping<T> AsScopeSingleton()
+        public ITypeMapping<T> AsScopeSingleton<TMapped>() where TMapped : T
         {
             CreationInstruction = CreationInstruction.Scope;
-            return this;
-        }
 
-        /// <inheritdoc/>
-        public ITypeMapping<T> AsTransient()
-        {
-            CreationInstruction = CreationInstruction.Always;
+            As<TMapped>();
+
             return this;
         }
 

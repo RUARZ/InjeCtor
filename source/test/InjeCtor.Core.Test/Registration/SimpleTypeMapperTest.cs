@@ -66,8 +66,8 @@ namespace InjeCtor.Core.Test.Registration
         [Test]
         public void RegistrationsAdd_WithCreationInstructionChange_Successfull()
         {
-            mTypeMapper.Add<ICalculator>().As<Calculator>().AsScopeSingleton();
-            mTypeMapper.Add<IGreeter>().As<Greeter>().AsSingleton();
+            mTypeMapper.Add<ICalculator>().AsScopeSingleton<Calculator>();
+            mTypeMapper.Add<IGreeter>().AsSingleton<Greeter>();
 
             IReadOnlyList<ITypeMapping> items = mTypeMapper.GetTypeMappings();
 
