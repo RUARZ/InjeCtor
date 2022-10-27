@@ -1,4 +1,5 @@
-﻿using InjeCtor.Core.Registration;
+﻿using InjeCtor.Core.Exceptions;
+using InjeCtor.Core.Registration;
 using InjeCtor.Core.Scope;
 using InjeCtor.Core.Test.Interfaces;
 using InjeCtor.Core.Test.TestClasses;
@@ -426,6 +427,39 @@ namespace InjeCtor.Core.Test.IntegrationTests
             Assert.That(createdInstance, Is.SameAs(secondInstance));
             Assert.That(secondInstance, Is.SameAs(otherScopeInstance));
             Assert.That(createdInstance, Is.SameAs(instanceToUse));
+        }
+
+        [Test]
+        public void Create_SimpleCircularReference_CircularReferenceExceptionThrown()
+        {
+            mInjeCtor.Mapper.Add<ICircularReferenceInterfaceA>().As<SimpleCircularReferenceClassA>();
+            mInjeCtor.Mapper.Add<ICircularReferenceInterfaceB>().As<SimpleCircularReferenceClassB>();
+
+            Assert.Throws<CircularReferenceException>(() => mInjeCtor.Create<ICircularReferenceInterfaceA>());
+        }
+
+        [Test]
+        public void Create_CircularReference_CircularReferenceExceptionThrown()
+        {
+            mInjeCtor.Mapper.Add<ICircularReferenceInterfaceA>().As<CircularReferenceClassA>();
+            mInjeCtor.Mapper.Add<ICircularReferenceInterfaceB>().As<CircularReferenceClassB>();
+            mInjeCtor.Mapper.Add<ICircularReferenceInterfaceC>().As<CircularReferenceClassC>();
+            mInjeCtor.Mapper.Add<ICircularReferenceInterfaceD>().As<CircularReferenceClassD>();
+
+            Assert.Throws<CircularReferenceException>(() => mInjeCtor.Create<ICircularReferenceInterfaceA>());
+        }
+
+        [Test]
+        public void Create_CircularReferenceClassesWithoutCompleteCircularReference_InstanceCreated()
+        {
+            mInjeCtor.Mapper.Add<ICircularReferenceInterfaceA>().As<CircularReferenceClassA>();
+            mInjeCtor.Mapper.Add<ICircularReferenceInterfaceB>().As<CircularReferenceClassB>();
+            mInjeCtor.Mapper.Add<ICircularReferenceInterfaceC>().As<CircularReferenceClassC>();
+
+            var createdObject = mInjeCtor.Create<ICircularReferenceInterfaceA>();
+
+            Assert.That(createdObject, Is.Not.Null);
+            Assert.That(createdObject, Is.InstanceOf<CircularReferenceClassA>());
         }
 
         #endregion

@@ -46,25 +46,25 @@ namespace InjeCtor.Core.Test.TypeInformation
         [Test]
         public void InjectProperties_NullInstance_NoErrorOccurs()
         {
-            mInjector.InjectProperties(null, mTypeInformationProvider, mCreator, mScope);
+            mInjector.InjectProperties(null, mTypeInformationProvider, mCreator, mScope, null);
         }
 
         [Test]
         public void InjectProperties_NullTypeInformationProvider_NoErrorOccurs()
         {
-            mInjector.InjectProperties(new Calculator(), null, mCreator, mScope);
+            mInjector.InjectProperties(new Calculator(), null, mCreator, mScope, null);
         }
 
         [Test]
         public void InjectProperties_NullCreator_NoErrorOccurs()
         {
-            mInjector.InjectProperties(new Calculator(), mTypeInformationProvider, null, mScope);
+            mInjector.InjectProperties(new Calculator(), mTypeInformationProvider, null, mScope, null);
         }
 
         [Test]
         public void InjectProperties_NoTypeInformationFound_NoInstanceInjected()
         {
-            mInjector.InjectProperties(mCalculator, mTypeInformationProvider, mCreator, mScope);
+            mInjector.InjectProperties(mCalculator, mTypeInformationProvider, mCreator, mScope, null);
 
             Assert.That(mCalculator.Greeter, Is.Null);
         }
@@ -74,7 +74,7 @@ namespace InjeCtor.Core.Test.TypeInformation
         {
             SetTypeInformationForCalculator();
 
-            mInjector.InjectProperties(mCalculator, mTypeInformationProvider, mCreator, mScope);
+            mInjector.InjectProperties(mCalculator, mTypeInformationProvider, mCreator, mScope, null);
 
             Assert.That(mCalculator.Greeter, Is.Not.Null);
             Assert.That(mCalculator.Greeter, Is.InstanceOf<Greeter>());
@@ -85,7 +85,7 @@ namespace InjeCtor.Core.Test.TypeInformation
         {
             SetTypeInformationForCalculator();
 
-            mInjector.InjectProperties(mCalculator, mTypeInformationProvider, mCreator, null);
+            mInjector.InjectProperties(mCalculator, mTypeInformationProvider, mCreator, null, null);
 
             Assert.That(mCalculator.Greeter, Is.Not.Null);
             Assert.That(mCalculator.Greeter, Is.InstanceOf<Greeter>());

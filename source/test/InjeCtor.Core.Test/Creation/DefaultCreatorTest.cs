@@ -1,4 +1,5 @@
 ﻿using InjeCtor.Core.Creation;
+using InjeCtor.Core.Exceptions;
 using InjeCtor.Core.Registration;
 using InjeCtor.Core.Scope;
 using InjeCtor.Core.Test.Interfaces;
@@ -170,6 +171,26 @@ namespace InjeCtor.Core.Test.Creation
         {
             Assert.Throws<InvalidOperationException>(() => mCreator.Create<INotMappedInterface>());
             Assert.Throws<InvalidOperationException>(() => mCreator.Create<NotMappedAbstractClass>());
+        }
+
+        [Test]
+        public void Create_SimpleCircularReference_CircularReferenceExceptionThrown()
+        {
+            mMappingProvider.Add<ICircularReferenceInterfaceA>().As<SimpleCircularReferenceClassA>();
+            mMappingProvider.Add<ICircularReferenceInterfaceB>().As<SimpleCircularReferenceClassB>();
+
+            Assert.Throws<CircularReferenceException>(() => mCreator.Create<ICircularReferenceInterfaceA>());
+        }
+
+        [Test]
+        public void Create_CircularReference_CircularReferenceExceptionThrown()
+        {
+            mMappingProvider.Add<ICircularReferenceInterfaceA>().As<CircularReferenceClassA>();
+            mMappingProvider.Add<ICircularReferenceInterfaceB>().As<CircularReferenceClassB>();
+            mMappingProvider.Add<ICircularReferenceInterfaceC>().As<CircularReferenceClassC>();
+            mMappingProvider.Add<ICircularReferenceInterfaceD>().As<CircularReferenceClassD>();
+
+            Assert.Throws<CircularReferenceException>(() => mCreator.Create<ICircularReferenceInterfaceA>());
         }
 
         #endregion

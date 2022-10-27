@@ -39,7 +39,7 @@ namespace InjeCtor.Core.Creation
         /// <inheritdoc/>
         public object Create(Type type)
         {
-            return Create(type, null);
+            return Create(type, null, new DefaultCreationHistory(type));
         }
 
         /// <inheritdoc/>
@@ -49,40 +49,40 @@ namespace InjeCtor.Core.Creation
         }
 
         /// <inheritdoc/>
-        public object Create(Type type, IScope? scope)
+        public object Create(Type type, IScope? scope, ICreationHistory? creationHistory = null)
         {
-            return CreateInternal(type, scope, false);
+            return CreateInternal(type, scope, false, creationHistory ?? new DefaultCreationHistory(type));
         }
 
         /// <inheritdoc/>
-        public T Create<T>(IScope? scope)
+        public T Create<T>(IScope? scope, ICreationHistory? creationHistory = null)
         {
-            return (T)Create(typeof(T), scope);
+            return (T)Create(typeof(T), scope, creationHistory ?? new DefaultCreationHistory(typeof(T)));
         }
 
         /// <inheritdoc/>
-        public object CreateDirect(Type type, IScope? scope)
+        public object CreateDirect(Type type, IScope? scope, ICreationHistory? creationHistory)
         {
-            return CreateInternal(type, scope, true);
+            return CreateInternal(type, scope, true, creationHistory);
         }
 
         /// <inheritdoc/>
-        public T CreateDirect<T>(IScope? scope)
+        public T CreateDirect<T>(IScope? scope, ICreationHistory? creationHistory)
         {
-            return (T)CreateDirect(typeof(T), scope);
+            return (T)CreateDirect(typeof(T), scope, creationHistory);
         }
 
         #endregion
 
         #region Private Methods
 
-        private object CreateInternal(Type type, IScope? scope, bool createDirect)
+        private object CreateInternal(Type type, IScope? scope, bool createDirect, ICreationHistory creationHistory)
         {
             ITypeMappingProvider providerToUse = GetTypeMappingProvider();
-            return Create(type, providerToUse, scope, createDirect);
+            return Create(type, providerToUse, scope, createDirect, creationHistory);
         }
 
-        private object Create(Type type, ITypeMappingProvider providerToUse, IScope? scope, bool createDirect)
+        private object Create(Type type, ITypeMappingProvider providerToUse, IScope? scope, bool createDirect, ICreationHistory creationHistory)
         {
             ITypeMapping? mapping = providerToUse.GetTypeMapping(type);
             Type creationType = mapping?.MappedType ?? type;
@@ -92,6 +92,8 @@ namespace InjeCtor.Core.Creation
             if (creationType.IsInterface)
                 throw new InvalidOperationException($"Can not create a instance of the not mapped interface '{creationType}'!");
 
+            if (!createDirect)
+                creationHistory.Add(creationType);
             if (!createDirect && mapping != null && scope != null && mapping.CreationInstruction != CreationInstruction.Always)
             {
                 object? singleton = scope.GetSingleton(type);
@@ -102,19 +104,26 @@ namespace InjeCtor.Core.Creation
                 if (mSingletons != null && mSingletons.TryGetValue(type, out singleton))
                     return singleton;
 
-                RequestSingletonCreationEventArgs args = new RequestSingletonCreationEventArgs(type);
+                RequestSingletonCreationEventArgs args = new RequestSingletonCreationEventArgs(type, creationHistory);
                 RequestSingletonCreationInstance?.Invoke(this, args);
 
                 if (args.Instance != null)
+                {
+                    creationHistory.Remove(creationType);
                     return args.Instance;
+                }
             }
 
             ConstructorInfo? constructorInfo = mCtorResolver.ResolveConstructorInfo(creationType, providerToUse);
-            object createdObject = CreateFromConstructor(constructorInfo, providerToUse, scope);
+            object createdObject = CreateFromConstructor(constructorInfo, providerToUse, scope, creationHistory);
+
+            if (!createDirect)
+                creationHistory.Remove(creationType);
+
             return createdObject;
         }
 
-        private object CreateFromConstructor(ConstructorInfo? info, ITypeMappingProvider providerToUse, IScope? scope)
+        private object CreateFromConstructor(ConstructorInfo? info, ITypeMappingProvider providerToUse, IScope? scope, ICreationHistory creationHistory)
         {
             if (info is null)
                 throw new ArgumentNullException(nameof(info), "The constructor info was not set / resolved!");
@@ -126,6 +135,7 @@ namespace InjeCtor.Core.Creation
             {
                 ParameterInfo pInfo = parameterInfos[i];
                 ITypeMapping? mapping = providerToUse.GetTypeMapping(pInfo.ParameterType);
+                creationHistory.Add(pInfo.ParameterType);
 
                 if (mapping is null || mapping.MappedType is null)
                 {
@@ -134,27 +144,32 @@ namespace InjeCtor.Core.Creation
                     else if (pInfo.ParameterType.IsValueType && Nullable.GetUnderlyingType(pInfo.ParameterType) is null)
                         parameters[i] = Activator.CreateInstance(pInfo.ParameterType);
                     else if (!pInfo.ParameterType.IsValueType && !IsReferenceTypeNullable(pInfo, info))
-                        parameters[i] = CreateNotMappedType(pInfo.ParameterType, providerToUse, scope);
+                        parameters[i] = CreateNotMappedType(pInfo.ParameterType, providerToUse, scope, creationHistory);
                     else
                         parameters[i] = null;
                 }
                 else
                 {
-                    parameters[i] = Create(pInfo.ParameterType, providerToUse, scope, false);
+                    parameters[i] = Create(pInfo.ParameterType, providerToUse, scope, false, creationHistory);
                 }
+
+                creationHistory.Remove(pInfo.ParameterType);
             }
 
             return info.Invoke(parameters);
         }
 
-        private object CreateNotMappedType(Type type, ITypeMappingProvider providerToUse, IScope? scope)
+        private object CreateNotMappedType(Type type, ITypeMappingProvider providerToUse, IScope? scope, ICreationHistory creationHistory)
         {
             ConstructorInfo[] constructorInfos = type.GetConstructors();
 
             if (constructorInfos.Length == 1 && !constructorInfos[0].GetParameters().Any())
+            {
+                creationHistory.Remove(type);
                 return Activator.CreateInstance(type); // only default ctor
+            }
 
-            return Create(type, providerToUse, scope, false);
+            return Create(type, providerToUse, scope, true, creationHistory);
         }
 
         private bool IsReferenceTypeNullable(ParameterInfo pInfo, ConstructorInfo ctorInfo)

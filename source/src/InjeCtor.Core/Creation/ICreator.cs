@@ -48,16 +48,18 @@ namespace InjeCtor.Core.Creation
         /// </summary>
         /// <param name="type">The <see cref="Type"/> for which the corresponding mapped type should be created.</param>
         /// <param name="scope">The <see cref="IScope"/> instance to use for checking of singletons.</param>
+        /// <param name="creationHistory">The <see cref="ICreationHistory"/> to use to check for circular references.</param>
         /// <returns>The created type.</returns>
-        object Create(Type type, IScope? scope);
+        object Create(Type type, IScope? scope, ICreationHistory? creationHistory = null);
 
         /// <summary>
         /// Creates a new instance which was mapped for <typeparamref name="T"/>.
         /// </summary>
         /// <typeparam name="T">The type for which the corresponding mapped type should be created.</typeparam>
         /// <param name="scope">The <see cref="IScope"/> instance to use for checking of singletons.</param>
+        /// <param name="creationHistory">The <see cref="ICreationHistory"/> to use to check for circular references.</param>
         /// <returns>The created type.</returns>
-        T Create<T>(IScope? scope);
+        T Create<T>(IScope? scope, ICreationHistory? creationHistory = null);
 
 
         /// <summary>
@@ -66,8 +68,9 @@ namespace InjeCtor.Core.Creation
         /// </summary>
         /// <param name="type">The <see cref="Type"/> to create.</param>
         /// <param name="scope">Instance of <see cref="IScope"/> if the scope is needed for later needed parameters for other creations.</param>
+        /// <param name="creationHistory">The <see cref="ICreationHistory"/> to use to check for circular references.</param>
         /// <returns>The created object.</returns>
-        object CreateDirect(Type type, IScope? scope);
+        object CreateDirect(Type type, IScope? scope, ICreationHistory creationHistory);
 
         /// <summary>
         /// Creates the object for the passed <typeparamref name="T"/> directly without checking / requesting singleton instances.
@@ -75,8 +78,9 @@ namespace InjeCtor.Core.Creation
         /// </summary>
         /// <typeparam name="T">The type to create.</typeparam>
         /// <param name="scope">Instance of <see cref="IScope"/> if the scope is needed for later needed parameters for other creations.</param>
+        /// <param name="creationHistory">The <see cref="ICreationHistory"/> to use to check for circular references.</param>
         /// <returns>The created object.</returns>
-        T CreateDirect<T>(IScope? scope);
+        T CreateDirect<T>(IScope? scope, ICreationHistory creationHistory);
     }
 
     /// <summary>
@@ -99,15 +103,22 @@ namespace InjeCtor.Core.Creation
         /// Creates a new instance of <see cref="RequestSingletonCreationEventArgs"/>.
         /// </summary>
         /// <param name="type">The type which is requested to create.</param>
-        public RequestSingletonCreationEventArgs(Type type)
+        /// <param name="creationHistory">Implementation of <see cref="ICreationHistory"/> to use for further requests.</param>
+        public RequestSingletonCreationEventArgs(Type type, ICreationHistory creationHistory)
         {
             Type = type;
+            CreationHistory = creationHistory;
         }
 
         /// <summary>
         /// The type which is requested to be created as global singleton
         /// </summary>
         public Type Type { get; set; }
+
+        /// <summary>
+        /// Instance of <see cref="ICreationHistory"/> to use for further creation requests.
+        /// </summary>
+        public ICreationHistory CreationHistory { get; }
 
         /// <summary>
         /// The created instance for the requested type!

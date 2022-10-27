@@ -186,7 +186,7 @@ namespace InjeCtor.Core
             return scope;
         }
 
-        private object CreateSingletonInstance(Type type)
+        private object CreateSingletonInstance(Type type, ICreationHistory creationHistory)
         {
             if (!mGlobalSingletons.TryGetValue(type, out var instance))
             {
@@ -194,11 +194,11 @@ namespace InjeCtor.Core
                 if (mapping != null && mapping.CreationInstruction == CreationInstruction.Singleton && mapping.Instance != null)
                     instance = mapping.Instance;
                 else
-                    instance = mCreator.Create(type);
+                    instance = mCreator.CreateDirect(type, mScope, creationHistory);
 
                 if (mGlobalSingletons.TryAdd(type, instance))
                 {
-                    mTypeInformationInjector.InjectProperties(instance, TypeInformationProvider, mCreator, mScope);
+                    mTypeInformationInjector.InjectProperties(instance, TypeInformationProvider, mCreator, mScope, creationHistory);
                 }
                 else if (!mGlobalSingletons.TryGetValue(type, out instance))
                 {
@@ -215,7 +215,7 @@ namespace InjeCtor.Core
 
         private void Scope_RequestSingletonCreationInstance(object sender, RequestSingletonCreationEventArgs e)
         {
-            object instance = CreateSingletonInstance(e.Type);
+            object instance = CreateSingletonInstance(e.Type, e.CreationHistory);
             e.Instance = instance;
         }
 

@@ -20,7 +20,8 @@ namespace InjeCtor.Core.TypeInformation
         /// <param name="typeInformationProvider">Implementation of <see cref="ITypeInformationProvider"/> to check for <see cref="ITypeInformation"/>s.</param>
         /// <param name="creator">Implementation of <see cref="IScopeAwareCreator"/> to create instances to inject.</param>
         /// <param name="scope">Implementation of <see cref="IScope"/> to get scope singletons if requested.</param>
-        public void InjectProperties(object? instance, ITypeInformationProvider? typeInformationProvider, IScopeAwareCreator? creator, IScope? scope)
+        /// <param name="creationHistory">The implementation of <see cref="ICreationHistory"/> to pass for creation of objects.</param>
+        public void InjectProperties(object? instance, ITypeInformationProvider? typeInformationProvider, IScopeAwareCreator? creator, IScope? scope, ICreationHistory creationHistory)
         {
             if (instance == null || typeInformationProvider == null || creator is null)
                 return;
@@ -36,8 +37,8 @@ namespace InjeCtor.Core.TypeInformation
                 foreach (PropertyInfo pInfo in propertiesToInject.Value)
                 {
                     object? injectInstance = scope != null ?
-                        creator.Create(typeToInject, scope) :
-                        creator.Create(typeToInject);
+                        creator.Create(typeToInject, scope, creationHistory) :
+                        creator.Create(typeToInject, null, creationHistory);
                     pInfo.SetValue(instance, injectInstance);
                 }
             }

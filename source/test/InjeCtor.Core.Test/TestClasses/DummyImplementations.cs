@@ -185,7 +185,7 @@ namespace InjeCtor.Core.Test.TestClasses
 
         public event EventHandler<RequestSingletonCreationEventArgs>? RequestSingletonCreationInstance;
 
-        public object Create(Type type, IScope? scope)
+        public object Create(Type type, IScope? scope, ICreationHistory? creationHistory)
         {
             string typeName = type.FullName;
             if (typeName == typeof(ICalculator).FullName)
@@ -204,19 +204,19 @@ namespace InjeCtor.Core.Test.TestClasses
             throw new InvalidOperationException($"unknown type '{typeName}'!");
         }
 
-        public T Create<T>(IScope? scope)
+        public T Create<T>(IScope? scope, ICreationHistory? creationHistory)
         {
-            return (T)Create(typeof(T), scope);
+            return (T)Create(typeof(T), scope, creationHistory);
         }
 
         public object Create(Type type)
         {
-            return Create(type, null);
+            return Create(type, null, null);
         }
 
         public T Create<T>()
         {
-            return (T)Create(typeof(T), null);
+            return (T)Create(typeof(T), null, null);
         }
 
         public void SetSingletons(IReadOnlyDictionary<Type, object> singletons)
@@ -224,14 +224,14 @@ namespace InjeCtor.Core.Test.TestClasses
             CreatedSingletons = singletons;
         }
 
-        public object CreateDirect(Type type, IScope? scope)
+        public object CreateDirect(Type type, IScope? scope, ICreationHistory creationHistory)
         {
-            return Create(type, scope);
+            return Create(type, scope, creationHistory);
         }
 
-        public T CreateDirect<T>(IScope? scope)
+        public T CreateDirect<T>(IScope? scope, ICreationHistory creationHistory)
         {
-            return (T)Create(typeof(T), scope);
+            return (T)Create(typeof(T), scope, creationHistory);
         }
 
         public IReadOnlyDictionary<Type, object> CreatedSingletons { get; private set; }
@@ -277,7 +277,7 @@ namespace InjeCtor.Core.Test.TestClasses
             }
             else
             {
-                RequestSingletonCreationEventArgs args = new RequestSingletonCreationEventArgs(type);
+                RequestSingletonCreationEventArgs args = new RequestSingletonCreationEventArgs(type, new DefaultCreationHistory(type));
                 RequestSingletonCreationInstance?.Invoke(this, args);
                 instance = args.Instance;
             }

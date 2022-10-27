@@ -65,22 +65,23 @@ namespace InjeCtor.Core.Scope
             if (Creator is null)
                 throw new InvalidOperationException($"The instance of '{typeof(ICreator).FullName}' to use was not set!");
 
+            var creationHistory = new DefaultCreationHistory(mapping?.MappedType ?? type);
             object instance;
             if (mapping is null)
             {
-                instance = Creator.Create(type);
-                InjectProperties(instance);
+                instance = Creator.Create(type, this, creationHistory);
+                InjectProperties(instance, creationHistory);
                 return instance;
             }
 
             switch (mapping.CreationInstruction)
             {
                 case CreationInstruction.Always:
-                    instance = Creator.Create(type, this);
-                    InjectProperties(instance);
+                    instance = Creator.Create(type, this, creationHistory);
+                    InjectProperties(instance, creationHistory);
                     return instance;
                 case CreationInstruction.Scope:
-                    object? scopeSingleton = CreateScopeSingleton(type);
+                    object? scopeSingleton = CreateScopeSingleton(type, creationHistory);
 
                     if (scopeSingleton is null)
                         throw new InvalidOperationException($"Failed to create scope singleton instance for type '{type}'!");
@@ -90,7 +91,7 @@ namespace InjeCtor.Core.Scope
                     if (mGlobalSingletons?.TryGetValue(type, out object singletonInstance) == true)
                         return singletonInstance;
 
-                    RequestSingletonCreationEventArgs args = new RequestSingletonCreationEventArgs(type);
+                    RequestSingletonCreationEventArgs args = new RequestSingletonCreationEventArgs(type, creationHistory);
                     RequestSingletonCreationInstance?.Invoke(this, args);
 
                     if (args.Instance is null)
@@ -150,19 +151,19 @@ namespace InjeCtor.Core.Scope
 
         #region Private Methods
 
-        private void InjectProperties(object instance)
+        private void InjectProperties(object instance, ICreationHistory creationHistory)
         {
-            mTypeInformationInjector.InjectProperties(instance, TypeInformationProvider, mCreator, this);
+            mTypeInformationInjector.InjectProperties(instance, TypeInformationProvider, mCreator, this, creationHistory);
         }
 
-        private object? CreateScopeSingleton(Type type)
+        private object? CreateScopeSingleton(Type type, ICreationHistory creationHistory)
         {
             if (!mScopeSingletons.TryGetValue(type, out object? instance))
             {
-                instance = Creator?.Create(type, this);
+                instance = Creator?.Create(type, this, creationHistory);
 
                 if (instance != null && mScopeSingletons.TryAdd(type, instance))
-                    InjectProperties(instance);
+                    InjectProperties(instance, creationHistory);
                 else if (!mScopeSingletons.TryGetValue(type, out instance))
                     throw new InvalidOperationException($"Failed to add / get scope singleton for type '{type}'!");
             }
@@ -196,7 +197,7 @@ namespace InjeCtor.Core.Scope
                 return;
             }
 
-            instance = Creator?.CreateDirect(e.Type, this);
+            instance = Creator?.CreateDirect(e.Type, this, e.CreationHistory);
 
             if (instance is null)
                 throw new InvalidCastException($"Failed to create instance for '{e.Type}'!");
@@ -204,7 +205,7 @@ namespace InjeCtor.Core.Scope
             if (!mScopeSingletons.TryAdd(e.Type, instance) && !mScopeSingletons.TryGetValue(e.Type, out instance))
                 throw new InvalidOperationException($"Failed to add / get scope singleton for type '{e.Type}'!");
             else
-                InjectProperties(instance);
+                InjectProperties(instance, e.CreationHistory);
 
             e.Instance = instance;
         }
