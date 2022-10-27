@@ -98,6 +98,26 @@ namespace InjeCtor.Core.Test.TestClasses
         {
             throw new NotImplementedException();
         }
+
+        public void AddTransient<T>() where T : class
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AddScopeSingleton<T>() where T : class
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AddSingleton<T>() where T : class
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AddSingleton<T>(T instance) where T : class
+        {
+            throw new NotImplementedException();
+        }
     }
 
     class DummyTypeInformationProvider : ITypeInformationProvider, ITypeInformationBuilder

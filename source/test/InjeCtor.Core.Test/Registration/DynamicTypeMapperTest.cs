@@ -208,6 +208,41 @@ namespace InjeCtor.Core.Test.Registration
             Assert.IsNull(mapping);
         }
 
+        [TestCase(CreationInstruction.Always)]
+        [TestCase(CreationInstruction.Scope)]
+        [TestCase(CreationInstruction.Singleton)]
+        public void Add_MappingOfClassDirectly_MappingAdded(CreationInstruction instruction)
+        {
+            switch (instruction)
+            {
+                case CreationInstruction.Always:
+                    mTypeMapper.AddTransient<Calculator>();
+                    break;
+                case CreationInstruction.Scope:
+                    mTypeMapper.AddScopeSingleton<Calculator>();
+                    break;
+                case CreationInstruction.Singleton:
+                    mTypeMapper.AddSingleton<Calculator>();
+                    break;
+            }
+
+            var item = mTypeMapper.GetTypeMapping<Calculator>();
+
+            AssertTypeMapping(item, typeof(Calculator), typeof(Calculator), instruction, null);
+        }
+
+        [Test]
+        public void Add_MappingOfClassDirectlyWithSingletonInstance_MappingAdded()
+        {
+            Calculator calc = new Calculator();
+
+            mTypeMapper.AddSingleton(calc);
+
+            var item = mTypeMapper.GetTypeMapping<Calculator>();
+
+            AssertTypeMapping(item, typeof(Calculator), typeof(Calculator), CreationInstruction.Singleton, calc);
+        }
+
         #endregion
 
         #region Private Methods

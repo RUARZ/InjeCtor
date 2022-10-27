@@ -47,6 +47,30 @@ namespace InjeCtor.Core.Registration
             return mMappingList.GetMapping(type);
         }
 
+        /// <inheritdoc/>
+        public void AddTransient<T>() where T : class
+        {
+            Add<T>().As<T>();
+        }
+
+        /// <inheritdoc/>
+        public void AddScopeSingleton<T>() where T : class
+        {
+            Add<T>().AsScopeSingleton<T>();
+        }
+
+        /// <inheritdoc/>
+        public void AddSingleton<T>() where T : class
+        {
+            Add<T>().AsSingleton<T>();
+        }
+
+        /// <inheritdoc/>
+        public void AddSingleton<T>(T instance) where T : class
+        {
+            Add<T>().AsSingleton(instance);
+        }
+
         #endregion
 
         #region Event Handling

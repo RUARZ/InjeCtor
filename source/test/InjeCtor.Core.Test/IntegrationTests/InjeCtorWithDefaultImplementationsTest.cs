@@ -320,12 +320,112 @@ namespace InjeCtor.Core.Test.IntegrationTests
         {
             var createdObject = mInjeCtor.Create<NotMappedClassWithAnotherNotMappedClassForCtor>();
 
-            Assert.That(createdObject, Is.Not.Null);
-            Assert.That(createdObject.OtherClass, Is.Not.Null);
-            Assert.That(createdObject.OtherClass.Greeter, Is.Not.Null);
-            Assert.That(createdObject.OtherClass.Calculator, Is.Not.Null);
-            Assert.That(createdObject.OtherClass.Greeter, Is.InstanceOf<Greeter>());
-            Assert.That(createdObject.OtherClass.Calculator, Is.InstanceOf<Calculator>());
+            using IScope scope = mInjeCtor.CreateScope();
+
+            var scopeObject = scope.Create<NotMappedClassWithAnotherNotMappedClassForCtor>();
+
+            void AssertInstance(NotMappedClassWithAnotherNotMappedClassForCtor instance)
+            {
+                Assert.That(instance, Is.Not.Null);
+                Assert.That(instance.OtherClass, Is.Not.Null);
+                Assert.That(instance.OtherClass.Greeter, Is.Not.Null);
+                Assert.That(instance.OtherClass.Calculator, Is.Not.Null);
+                Assert.That(instance.OtherClass.Greeter, Is.InstanceOf<Greeter>());
+                Assert.That(instance.OtherClass.Calculator, Is.InstanceOf<Calculator>());
+            }
+
+            AssertInstance(createdObject);
+            AssertInstance(scopeObject);
+        }
+
+        [TestCase(CreationInstruction.Always)]
+        [TestCase(CreationInstruction.Scope)]
+        [TestCase(CreationInstruction.Singleton)]
+        public void Create_PreviouslyNotMappedTypeAddedDirectly_InstanceCreated(CreationInstruction instruction)
+        {
+            switch (instruction)
+            {
+                case CreationInstruction.Always:
+                    mInjeCtor.Mapper.AddTransient<NotMappedClassWithInjections>();
+                    break;
+                case CreationInstruction.Scope:
+                    mInjeCtor.Mapper.AddScopeSingleton<NotMappedClassWithInjections>();
+                    break;
+                case CreationInstruction.Singleton:
+                    mInjeCtor.Mapper.AddSingleton<NotMappedClassWithInjections>();
+                    break;
+            }
+
+            var createdInstance = mInjeCtor.Create<NotMappedClassWithInjections>();
+            var secondInstance = mInjeCtor.Create<NotMappedClassWithInjections>();
+
+            using IScope scope = mInjeCtor.CreateScope();
+
+            var otherScopeInstance = scope.Create<NotMappedClassWithInjections>();
+
+            void AssertInstance(NotMappedClassWithInjections instance)
+            {
+                Assert.That(instance, Is.Not.Null);
+                Assert.That(instance, Is.TypeOf<NotMappedClassWithInjections>());
+
+                Assert.That(instance.Calculator, Is.Not.Null);
+                Assert.That(instance.Calculator, Is.InstanceOf<Calculator>());
+
+                Assert.That(instance.Greeter, Is.Null);
+            }
+
+            AssertInstance(createdInstance);
+            AssertInstance(secondInstance);
+            AssertInstance(otherScopeInstance);
+
+            switch (instruction)
+            {
+                case CreationInstruction.Always:
+                    Assert.That(createdInstance, Is.Not.SameAs(secondInstance));
+                    Assert.That(secondInstance, Is.Not.SameAs(otherScopeInstance));
+                    break;
+                case CreationInstruction.Scope:
+                    Assert.That(createdInstance, Is.SameAs(secondInstance));
+                    Assert.That(secondInstance, Is.Not.SameAs(otherScopeInstance));
+                    break;
+                case CreationInstruction.Singleton:
+                    Assert.That(createdInstance, Is.SameAs(secondInstance));
+                    Assert.That(secondInstance, Is.SameAs(otherScopeInstance));
+                    break;
+            }
+        }
+
+        [Test]
+        public void Create_PreviouslyNotMappedTypeAddedDirectlyWithInstance_InstanceCreated()
+        {
+            NotMappedClassWithInjections instanceToUse = new NotMappedClassWithInjections();
+            mInjeCtor.Mapper.AddSingleton(instanceToUse);
+
+            var createdInstance = mInjeCtor.Create<NotMappedClassWithInjections>();
+            var secondInstance = mInjeCtor.Create<NotMappedClassWithInjections>();
+
+            using IScope scope = mInjeCtor.CreateScope();
+
+            var otherScopeInstance = scope.Create<NotMappedClassWithInjections>();
+
+            void AssertInstance(NotMappedClassWithInjections instance)
+            {
+                Assert.That(instance, Is.Not.Null);
+                Assert.That(instance, Is.TypeOf<NotMappedClassWithInjections>());
+
+                Assert.That(instance.Calculator, Is.Not.Null);
+                Assert.That(instance.Calculator, Is.InstanceOf<Calculator>());
+
+                Assert.That(instance.Greeter, Is.Null);
+            }
+
+            AssertInstance(createdInstance);
+            AssertInstance(secondInstance);
+            AssertInstance(otherScopeInstance);
+            
+            Assert.That(createdInstance, Is.SameAs(secondInstance));
+            Assert.That(secondInstance, Is.SameAs(otherScopeInstance));
+            Assert.That(createdInstance, Is.SameAs(instanceToUse));
         }
 
         #endregion

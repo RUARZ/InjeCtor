@@ -16,6 +16,35 @@ namespace InjeCtor.Core.Registration
         /// <typeparam name="T">The type which should be mapped.</typeparam>
         /// <returns>A <see cref="ITypeMapping{TDef}"/> instance for further configuration.</returns>
         ITypeMapping<T> Add<T>();
+
+        /// <summary>
+        /// Adds a new mapping for <typeparamref name="T"/> which is directly the type to use / create.
+        /// Will be added with createion instruction <see cref="CreationInstruction.Always"/>.
+        /// </summary>
+        /// <typeparam name="T">The type to add as mapping and directly use to create.</typeparam>
+        void AddTransient<T>() where T : class;
+
+        /// <summary>
+        /// Adds a new mapping for <typeparamref name="T"/> which is directly the type to use / create.
+        /// Will be added with createion instruction <see cref="CreationInstruction.Scope"/>.
+        /// </summary>
+        /// <typeparam name="T">The type to add as mapping and directly use to create.</typeparam>
+        void AddScopeSingleton<T>() where T : class;
+
+        /// <summary>
+        /// Adds a new mapping for <typeparamref name="T"/> which is directly the type to use / create.
+        /// Will be added with createion instruction <see cref="CreationInstruction.Singleton"/>.
+        /// </summary>
+        /// <typeparam name="T">The type to add as mapping and directly use to create.</typeparam>
+        void AddSingleton<T>() where T : class;
+
+        /// <summary>
+        /// Adds a new mapping for <typeparamref name="T"/> which is directly the type to use / create.
+        /// Will be added with createion instruction <see cref="CreationInstruction.Singleton"/>.
+        /// </summary>
+        /// <typeparam name="T">The type to add as mapping and directly use to create.</typeparam>
+        /// <param name="instance">The instance to use for the singleton.</param>
+        void AddSingleton<T>(T instance) where T : class;
     }
 
     /// <summary>
