@@ -46,15 +46,22 @@ namespace InjeCtor.Core.Registration
         #region IDynamicTypeMapper
 
         /// <inheritdoc/>
+        public event EventHandler<MappingAddedEventArgs>? MappingAdded;
+
+        /// <inheritdoc/>
         ITypeMapping<T> ITypeMapper.Add<T>()
         {
-            return mMappingList.Add(new TypeMapping<T>()); // in this case a normal type mapping is fine.
+            TypeMapping<T> mapping = new TypeMapping<T>();
+            mapping.MappingChanged += Mapping_MappingChanged;
+            return mMappingList.Add(mapping); // in this case a normal type mapping is fine.
         }
 
         /// <inheritdoc/>
         public IDynamicTypeMapping<T> Add<T>()
         {
-            return mMappingList.Add(new DynamicTypeMapping<T>());
+            DynamicTypeMapping<T> mapping = new DynamicTypeMapping<T>();
+            mapping.MappingChanged += Mapping_MappingChanged;
+            return mMappingList.Add(mapping);
         }
 
         /// <inheritdoc/>
@@ -163,6 +170,20 @@ namespace InjeCtor.Core.Registration
                 setableMapping.SetMappedType(matchingTypes.First());
             }
             return allMappingsOk;
+        }
+
+        #endregion
+
+        #region Event Handling
+
+        private void Mapping_MappingChanged(object sender, EventArgs e)
+        {
+            if (!(sender is INotifyOnMappingChangedTypeMapping mapping))
+                return;
+
+            mapping.MappingChanged -= Mapping_MappingChanged;
+
+            MappingAdded?.Invoke(this, new MappingAddedEventArgs(mapping));
         }
 
         #endregion

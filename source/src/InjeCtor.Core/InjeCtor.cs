@@ -17,7 +17,7 @@ namespace InjeCtor.Core
     {
         #region Private Fields
 
-        private readonly ITypeInformationProvider mTypeInformationProvider;
+        private readonly TypeInformationInjector mTypeInformationInjector = new TypeInformationInjector();
         private readonly IScopeAwareCreator mCreator;
 
         private ITypeMappingProvider mMappingProvider;
@@ -72,7 +72,12 @@ namespace InjeCtor.Core
             Mapper = mapper;
             mMappingProvider = mapper;
 
-            mTypeInformationProvider = typeInfoProvider;
+            TypeInformationProvider = typeInfoProvider;
+            TypeInformationBuilder = typeInfoProvider as ITypeInformationBuilder;
+
+            if (TypeInformationBuilder != null)
+                Mapper.MappingAdded += Mapper_MappingAdded;
+
             mCreator = creator;
             mCreator.MappingProvider = mMappingProvider;
             mCreator.SetSingletons(mGlobalSingletons);
@@ -102,6 +107,12 @@ namespace InjeCtor.Core
                 throw new InvalidOperationException($"Setting of '{nameof(MappingProvider)}' is not allowed since it can only be set through constructor for '{typeof(InjeCtor).FullName}'!");
             }
         }
+
+        /// <inheritdoc/>
+        public ITypeInformationProvider TypeInformationProvider { get; }
+
+        /// <inheritdoc/>
+        public ITypeInformationBuilder? TypeInformationBuilder { get; }
 
         /// <inheritdoc/>
         public object Create(Type type)
@@ -167,7 +178,7 @@ namespace InjeCtor.Core
         {
             IScope scope = mCreator.Create<IScope>();
             scope.Creator = mCreator;
-            scope.TypeInformationProvider = mTypeInformationProvider;
+            scope.TypeInformationProvider = TypeInformationProvider;
             scope.MappingProvider = MappingProvider;
             scope.Disposing += Scope_Disposing;
             scope.RequestSingletonCreationInstance += Scope_RequestSingletonCreationInstance;
@@ -187,7 +198,7 @@ namespace InjeCtor.Core
 
                 if (mGlobalSingletons.TryAdd(type, instance))
                 {
-                    //TODO: furhter processing for injection depending on type informations!   
+                    mTypeInformationInjector.InjectProperties(instance, TypeInformationProvider, mCreator, mScope);
                 }
                 else if (!mGlobalSingletons.TryGetValue(type, out instance))
                 {
@@ -200,7 +211,7 @@ namespace InjeCtor.Core
 
         #endregion
 
-        #region IScope Event handling
+        #region Event handling
 
         private void Scope_RequestSingletonCreationInstance(object sender, RequestSingletonCreationEventArgs e)
         {
@@ -217,6 +228,12 @@ namespace InjeCtor.Core
             scope.RequestSingletonCreationInstance -= Scope_RequestSingletonCreationInstance;
 
             mScopes?.TryRemove(scope, out _);
+        }
+
+        private void Mapper_MappingAdded(object sender, MappingAddedEventArgs e)
+        {
+            if (e?.Mapping?.MappedType != null)
+                TypeInformationBuilder?.Add(e.Mapping.MappedType);
         }
 
         #endregion

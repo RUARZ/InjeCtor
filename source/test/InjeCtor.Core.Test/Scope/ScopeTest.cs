@@ -5,6 +5,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using SutScope = InjeCtor.Core.Scope.Scope;
@@ -82,6 +83,32 @@ namespace InjeCtor.Core.Test.Scope
             Assert.That(secondObject, Is.Not.Null);
             Assert.That(secondObject, Is.InstanceOf(resultType));
             Assert.That(createdObject, Is.Not.SameAs(secondObject));
+        }
+
+        [Test]
+        public void Create_WithTypeInformationInjection_PropertyInjected()
+        {
+            mInformationProvider.SetTypeInformations(new Dictionary<Type, Dictionary<Type, List<PropertyInfo>>>
+            {
+                { typeof(Calculator), 
+                    new Dictionary<Type, List<PropertyInfo>> 
+                    { 
+                        { typeof(IGreeter), 
+                            typeof(Calculator).GetProperties().Where(p => p.Name == nameof(Calculator.Greeter)).ToList()
+                        } 
+                    } 
+                }
+            });
+
+            var createdObject = mScope.Create<ICalculator>();
+
+            Assert.That(createdObject, Is.Not.Null);
+            Assert.That(createdObject, Is.InstanceOf<Calculator>());
+
+            Calculator calc = (Calculator)createdObject;
+
+            Assert.That(calc.Greeter, Is.Not.Null);
+            Assert.That(calc.Greeter, Is.InstanceOf<Greeter>());
         }
 
         [TestCase(typeof(ICalculator), typeof(Calculator))]

@@ -21,6 +21,8 @@
         {
             return number1 - number2;
         }
+
+        public IGreeter? Greeter { get; set; }
     }
 
     class Greeter : IGreeter

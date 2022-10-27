@@ -8,6 +8,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -183,6 +184,56 @@ namespace InjeCtor.Core.Test
         public void SetSingletons_Call_ThrowsInvalidOperationException()
         {
             Assert.Throws<InvalidOperationException>(() => mInjeCtor.SetSingletons(null));
+        }
+
+        [Test]
+        public void AddTypeMapping_AddTypeInformation_TypeInformationAdded()
+        {
+            Assert.That(mTypeInformationProvider.AddedTypes.Count, Is.EqualTo(0));
+
+            mInjeCtor.Mapper.Add<Calculator>();
+
+            Assert.That(mTypeInformationProvider.AddedTypes.Count, Is.EqualTo(1));
+            Assert.That(mTypeInformationProvider.AddedTypes, Contains.Item(typeof(Calculator)));
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void Create_SingletonInstance_TypeInformationSetDependingOnExistingTypeInformation(bool addTypeInformation)
+        {
+            mTypeMapper.SetCreationInstruction(CreationInstruction.Singleton);
+
+            if (addTypeInformation)
+            {
+                mTypeInformationProvider.SetTypeInformations(new Dictionary<Type, Dictionary<Type, List<PropertyInfo>>>
+                {
+                    { typeof(Calculator),
+                        new Dictionary<Type, List<PropertyInfo>>
+                        {
+                            { typeof(IGreeter),
+                                typeof(Calculator).GetProperties().Where(p => p.Name == nameof(Calculator.Greeter)).ToList()
+                            }
+                        }
+                    }
+                });
+            }
+
+            var createdObject = mInjeCtor.Create<ICalculator>();
+
+            Assert.That(createdObject, Is.Not.Null);
+            Assert.That(createdObject, Is.InstanceOf<Calculator>());
+
+            Calculator calc = (Calculator)createdObject;
+
+            if (addTypeInformation)
+            {
+                Assert.That(calc.Greeter, Is.Not.Null);
+                Assert.That(calc.Greeter, Is.InstanceOf<Greeter>());
+            }
+            else
+            {
+                Assert.That(calc.Greeter, Is.Null);
+            }
         }
 
         #endregion

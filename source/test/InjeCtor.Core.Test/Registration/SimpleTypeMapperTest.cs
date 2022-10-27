@@ -41,6 +41,30 @@ namespace InjeCtor.Core.Test.Registration
         }
 
         [Test]
+        public void Add_MappingAdded_ThrownAfterCompletion()
+        {
+            int eventCounter = 0;
+            MappingAddedEventArgs? args = null;
+            mTypeMapper.MappingAdded += (sender, e) =>
+            {
+                eventCounter++;
+                args = e;
+            };
+
+            var mapping = mTypeMapper.Add<ICalculator>();
+
+            Assert.That(eventCounter, Is.EqualTo(0));
+            Assert.That(args, Is.Null);
+
+            mapping.As<Calculator>();
+
+            Assert.That(eventCounter, Is.EqualTo(1));
+            Assert.That(args, Is.Not.Null);
+            Assert.That(args.Mapping.SourceType, Is.EqualTo(typeof(ICalculator)));
+            Assert.That(args.Mapping.MappedType, Is.EqualTo(typeof(Calculator)));
+        }
+
+        [Test]
         public void RegistrationsAdd_DoubleRegistration()
         {
             mTypeMapper.Add<ICalculator>().As<Calculator>();

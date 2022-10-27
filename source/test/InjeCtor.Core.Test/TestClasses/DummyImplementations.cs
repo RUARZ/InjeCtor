@@ -6,6 +6,8 @@ using InjeCtor.Core.TypeInformation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -28,6 +30,8 @@ namespace InjeCtor.Core.Test.TestClasses
 
         private Dictionary<string, object> mDirectSingletons = new Dictionary<string, object>();
 
+        public event EventHandler<MappingAddedEventArgs>? MappingAdded;
+
         public void SetCreationInstruction(CreationInstruction instruction)
         {
             mInstruction = instruction;
@@ -40,7 +44,11 @@ namespace InjeCtor.Core.Test.TestClasses
 
         public ITypeMapping<T> Add<T>()
         {
-            throw new NotImplementedException();
+            DummyTypeMapping mapping = new DummyTypeMapping();
+            mapping.SourceType = typeof(T);
+            mapping.MappedType = typeof(T);
+            MappingAdded?.Invoke(this, new MappingAddedEventArgs(mapping));
+            return null;
         }
 
         public ITypeMapping? GetTypeMapping<T>()
@@ -90,17 +98,63 @@ namespace InjeCtor.Core.Test.TestClasses
         }
     }
 
-    class DummyTypeInformationProvider : ITypeInformationProvider
+    class DummyTypeInformationProvider : ITypeInformationProvider, ITypeInformationBuilder
     {
+        private Dictionary<Type, Dictionary<Type, List<PropertyInfo>>>? mTypeInformations;
+        private HashSet<Type> mAddedTypes = new HashSet<Type>();
+
+        public void SetTypeInformations(Dictionary<Type, Dictionary<Type, List<PropertyInfo>>> typeInformations)
+        {
+            mTypeInformations = typeInformations;
+        }
+
         public ITypeInformation? Get<T>()
         {
-            return null;
+            return Get(typeof(T));
         }
 
         public ITypeInformation? Get(Type type)
         {
-            return null;
+            if (mTypeInformations?.TryGetValue(type, out Dictionary<Type, List<PropertyInfo>> injectDict) != true)
+                return null;
+
+            Dictionary<Type, IReadOnlyList<PropertyInfo>> dictToUse = new Dictionary<Type, IReadOnlyList<PropertyInfo>>();
+            foreach (KeyValuePair<Type, List<PropertyInfo>> kvp in injectDict)
+            {
+                dictToUse.Add(kvp.Key, kvp.Value.AsReadOnly());
+            }
+
+            ITypeInformation info = new DummyTypeInformation
+            {
+                Type = type,
+                PropertiesToInject = dictToUse
+            };
+
+            return info;
         }
+
+        public void Add<T>()
+        {
+            Add(typeof(T));
+        }
+
+        public void Add(Type type)
+        {
+            mAddedTypes.Add(type);
+        }
+
+        public HashSet<Type> AddedTypes => mAddedTypes;
+
+        public bool AddPropertyInjection<T, TProperty>(Expression<Func<T, TProperty>> expression)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    class DummyTypeInformation : ITypeInformation
+    {
+        public Type Type { get; set; }
+        public IReadOnlyDictionary<Type, IReadOnlyList<PropertyInfo>> PropertiesToInject { get; set; }
     }
 
     class DummyCreator : IScopeAwareCreator

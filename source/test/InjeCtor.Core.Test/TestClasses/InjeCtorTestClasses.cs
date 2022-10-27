@@ -1,4 +1,6 @@
-﻿using System;
+﻿using InjeCtor.Core.Attribute;
+using InjeCtor.Core.Test.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -41,5 +43,15 @@ namespace InjeCtor.Core.Test.TestClasses
         {
             IsDisposed = true;
         }
+    }
+
+    interface IDummyInterface { }
+
+    class DummyClassWithInjectAttributes : IDummyInterface
+    {
+        public IGreeter Greeter { get; set; }
+
+        [Inject]
+        public IGreeter GreeterWithAttribute { get; set; }
     }
 }

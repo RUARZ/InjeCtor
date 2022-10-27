@@ -70,6 +70,31 @@ namespace InjeCtor.Core.Registration
         /// <param name="type">The <see cref="Type"/> for which a mapping should be retrieved, if possible.</param>
         /// <returns>The <see cref="ITypeMapping"/> entry if found, otherwise <see langword="null"/>!</returns>
         ITypeMapping? GetTypeMapping(Type type);
+
+        /// <summary>
+        /// Event for new added mapping.
+        /// </summary>
+        event EventHandler<MappingAddedEventArgs>? MappingAdded;
+    }
+
+    /// <summary>
+    /// Event args for <see cref="ITypeMappingProvider.MappingAdded"/> with the added mapping.
+    /// </summary>
+    public class MappingAddedEventArgs : EventArgs
+    {
+        /// <summary>
+        /// Creates a new instance of <see cref="MappingAddedEventArgs"/>.
+        /// </summary>
+        /// <param name="mapping">The <see cref="ITypeMapping"/> which was added.</param>
+        public MappingAddedEventArgs(ITypeMapping mapping)
+        {
+            Mapping = mapping;
+        }
+
+        /// <summary>
+        /// The added <see cref="ITypeMapping"/>.
+        /// </summary>
+        public ITypeMapping Mapping { get; }
     }
 
     /// <summary>

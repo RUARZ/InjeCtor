@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Reflection;
 
 [assembly: InternalsVisibleTo("InjeCtor.Core.Test")]
 namespace InjeCtor.Core.Scope
@@ -15,6 +16,7 @@ namespace InjeCtor.Core.Scope
     {
         #region Private Fields
 
+        private readonly TypeInformationInjector mTypeInformationInjector = new TypeInformationInjector();
         private IReadOnlyDictionary<Type, object>? mGlobalSingletons;
         private readonly ConcurrentDictionary<Type, object> mScopeSingletons = new ConcurrentDictionary<Type, object>();
 
@@ -71,7 +73,8 @@ namespace InjeCtor.Core.Scope
             {
                 case CreationInstruction.Always:
                     instance = Creator.Create(type, this);
-                    break;
+                    InjectProperties(instance);
+                    return instance;
                 case CreationInstruction.Scope:
                     object? scopeSingleton = CreateScopeSingleton(type);
 
@@ -94,9 +97,6 @@ namespace InjeCtor.Core.Scope
                 default:
                     throw new NotSupportedException($"The creation type '{mapping.CreationInstruction}' is not allowed to be handled by '{typeof(IScope).FullName}'!");
             }
-
-            //TODO: further processing for maybe further injection depending in type informations!
-            return instance;
         }
 
         /// <inheritdoc/>
@@ -146,6 +146,11 @@ namespace InjeCtor.Core.Scope
 
         #region Private Methods
 
+        private void InjectProperties(object instance)
+        {
+            mTypeInformationInjector.InjectProperties(instance, TypeInformationProvider, mCreator, this);
+        }
+
         private object? CreateScopeSingleton(Type type)
         {
             if (!mScopeSingletons.TryGetValue(type, out object? instance))
@@ -153,9 +158,7 @@ namespace InjeCtor.Core.Scope
                 instance = Creator?.Create(type, this);
 
                 if (instance != null && mScopeSingletons.TryAdd(type, instance))
-                {
-                    //TODO: furhter processing for injection depending on type informations!
-                }
+                    InjectProperties(instance);
                 else if (!mScopeSingletons.TryGetValue(type, out instance))
                     throw new InvalidOperationException($"Failed to add / get scope singleton for type '{type}'!");
             }
@@ -196,6 +199,8 @@ namespace InjeCtor.Core.Scope
 
             if (!mScopeSingletons.TryAdd(e.Type, instance) && !mScopeSingletons.TryGetValue(e.Type, out instance))
                 throw new InvalidOperationException($"Failed to add / get scope singleton for type '{e.Type}'!");
+            else
+                InjectProperties(instance);
 
             e.Instance = instance;
         }

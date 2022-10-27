@@ -1,6 +1,8 @@
-﻿using InjeCtor.Core.Scope;
+﻿using InjeCtor.Core.Registration;
+using InjeCtor.Core.Scope;
 using InjeCtor.Core.Test.Interfaces;
 using InjeCtor.Core.Test.TestClasses;
+using InjeCtor.Core.TypeInformation;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -212,6 +214,60 @@ namespace InjeCtor.Core.Test.IntegrationTests
 
             Assert.That(secondObject.IsDisposed, Is.True);
             Assert.That(mInjeCtor.GetScopes().Count(), Is.EqualTo(0));
+        }
+
+        [TestCase(false, CreationInstruction.Always)]
+        [TestCase(true, CreationInstruction.Always)]
+        [TestCase(false, CreationInstruction.Scope)]
+        [TestCase(true, CreationInstruction.Scope)]
+        [TestCase(false, CreationInstruction.Singleton)]
+        [TestCase(true, CreationInstruction.Singleton)]
+        public void Create_WithTypeInformations_PropertyInjected(bool addTypeInformationForNonAttributeProperty, CreationInstruction creationInstruction)
+        {
+            ITypeMapping<IDummyInterface> mapping = mInjeCtor.Mapper.Add<IDummyInterface>();
+            switch (creationInstruction)
+            {
+                case CreationInstruction.Always:
+                    mapping.As<DummyClassWithInjectAttributes>();
+                    break;
+                case CreationInstruction.Scope:
+                    mapping.AsScopeSingleton<DummyClassWithInjectAttributes>();
+                    break;
+                case CreationInstruction.Singleton:
+                    mapping.AsSingleton<DummyClassWithInjectAttributes>();
+                    break;
+            }
+
+            if (addTypeInformationForNonAttributeProperty)
+                mInjeCtor.TypeInformationBuilder.AddPropertyInjection((DummyClassWithInjectAttributes c) => c.Greeter);
+
+            var createdObject = mInjeCtor.Create<IDummyInterface>();
+
+            var instance = AssertAndGetCastedType<DummyClassWithInjectAttributes>(createdObject);
+
+            if (!addTypeInformationForNonAttributeProperty)
+            {
+                Assert.That(instance.Greeter, Is.Null);
+            }
+            else
+            {
+                Assert.That(instance.Greeter, Is.Not.Null);
+                Assert.That(instance.Greeter, Is.InstanceOf<Greeter>());
+            }
+            Assert.That(instance.GreeterWithAttribute, Is.Not.Null);
+            Assert.That(instance.GreeterWithAttribute, Is.InstanceOf<Greeter>());
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private T AssertAndGetCastedType<T>(object? instance)
+        {
+            Assert.That(instance, Is.Not.Null);
+            Assert.That(instance, Is.InstanceOf(typeof(T)));
+
+            return (T)instance;
         }
 
         #endregion
