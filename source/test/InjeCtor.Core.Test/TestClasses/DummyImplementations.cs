@@ -82,6 +82,8 @@ namespace InjeCtor.Core.Test.TestClasses
                 mapping.MappedType = typeof(NonDisposableSingleton);
                 mapping.CreationInstruction = CreationInstruction.Singleton;
             }
+            else if (typeName == typeof(NotMappedClass).FullName)
+                return null;
 
             if (mInstruction.HasValue)
                 mapping.CreationInstruction = mInstruction.Value;
@@ -176,6 +178,8 @@ namespace InjeCtor.Core.Test.TestClasses
                 return new SingletonClass();
             else if (typeName == typeof(BaseClassForNonDisposableSingleton).FullName)
                 return new NonDisposableSingleton();
+            else if (typeName == typeof(NotMappedClass).FullName)
+                return new NotMappedClass(new Calculator(), new Greeter());
 
             throw new InvalidOperationException($"unknown type '{typeName}'!");
         }
@@ -240,7 +244,11 @@ namespace InjeCtor.Core.Test.TestClasses
 
         public object Create(Type type)
         {
-            bool isSingleton = MappingProvider.GetTypeMapping(type).CreationInstruction == CreationInstruction.Singleton;
+            var mapping = MappingProvider.GetTypeMapping(type);
+            if (mapping is null)
+                return Creator.Create(type);
+
+            bool isSingleton = mapping.CreationInstruction == CreationInstruction.Singleton;
 
             object instance;
             if (!isSingleton)

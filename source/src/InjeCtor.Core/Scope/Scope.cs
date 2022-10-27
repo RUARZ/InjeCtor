@@ -59,16 +59,20 @@ namespace InjeCtor.Core.Scope
         {
             ITypeMapping? mapping = MappingProvider?.GetTypeMapping(type);
 
-            if (mapping is null)
-                throw new InvalidOperationException($"No mapping found for the type '{type.FullName}'!");
-
-            if (mapping.MappedType is null)
+            if (mapping != null && mapping.MappedType is null)
                 throw new InvalidOperationException($"The mapped type is null for '{mapping.SourceType.FullName}'!");
 
             if (Creator is null)
                 throw new InvalidOperationException($"The instance of '{typeof(ICreator).FullName}' to use was not set!");
 
             object instance;
+            if (mapping is null)
+            {
+                instance = Creator.Create(type);
+                InjectProperties(instance);
+                return instance;
+            }
+
             switch (mapping.CreationInstruction)
             {
                 case CreationInstruction.Always:

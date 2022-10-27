@@ -87,6 +87,11 @@ namespace InjeCtor.Core.Creation
             ITypeMapping? mapping = providerToUse.GetTypeMapping(type);
             Type creationType = mapping?.MappedType ?? type;
 
+            if (creationType.IsAbstract)
+                throw new InvalidOperationException($"Can not create the abstract type '{creationType}'!");
+            if (creationType.IsInterface)
+                throw new InvalidOperationException($"Can not create a instance of the not mapped interface '{creationType}'!");
+
             if (!createDirect && mapping != null && scope != null && mapping.CreationInstruction != CreationInstruction.Always)
             {
                 object? singleton = scope.GetSingleton(type);
@@ -129,7 +134,7 @@ namespace InjeCtor.Core.Creation
                     else if (pInfo.ParameterType.IsValueType && Nullable.GetUnderlyingType(pInfo.ParameterType) is null)
                         parameters[i] = Activator.CreateInstance(pInfo.ParameterType);
                     else if (!pInfo.ParameterType.IsValueType && !IsReferenceTypeNullable(pInfo, info))
-                        parameters[i] = Activator.CreateInstance(pInfo.ParameterType);
+                        parameters[i] = CreateNotMappedType(pInfo.ParameterType, providerToUse, scope);
                     else
                         parameters[i] = null;
                 }
@@ -140,6 +145,16 @@ namespace InjeCtor.Core.Creation
             }
 
             return info.Invoke(parameters);
+        }
+
+        private object CreateNotMappedType(Type type, ITypeMappingProvider providerToUse, IScope? scope)
+        {
+            ConstructorInfo[] constructorInfos = type.GetConstructors();
+
+            if (constructorInfos.Length == 1 && !constructorInfos[0].GetParameters().Any())
+                return Activator.CreateInstance(type); // only default ctor
+
+            return Create(type, providerToUse, scope, false);
         }
 
         private bool IsReferenceTypeNullable(ParameterInfo pInfo, ConstructorInfo ctorInfo)

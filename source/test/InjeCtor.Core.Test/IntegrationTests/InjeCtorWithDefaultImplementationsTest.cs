@@ -258,6 +258,76 @@ namespace InjeCtor.Core.Test.IntegrationTests
             Assert.That(instance.GreeterWithAttribute, Is.InstanceOf<Greeter>());
         }
 
+        [Test]
+        public void Create_NotAddedTypeMappingClass_InstanceCreatedWithPassedParameters()
+        {
+            var createdObject = mInjeCtor.Create<NotMappedClass>();
+
+            Assert.That(createdObject, Is.Not.Null);
+            Assert.That(createdObject.Calculator, Is.Not.Null);
+            Assert.That(createdObject.Greeter, Is.Not.Null);
+            Assert.That(createdObject.Calculator, Is.InstanceOf<Calculator>());
+            Assert.That(createdObject.Greeter, Is.InstanceOf<Greeter>());
+        }
+
+        [Test]
+        public void Create_NotMappedInterfaceAndAbstractClass_InvalidOperationException()
+        {
+            Assert.Throws<InvalidOperationException>(() => mInjeCtor.Create<INotMappedInterface>());
+            Assert.Throws<InvalidOperationException>(() => mInjeCtor.Create<NotMappedAbstractClass>());
+        }
+
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void Create_NotMappedClassWithInjections_InjectedDependingOnTypeInformation(bool setTypeInformation, bool setPropertyInjectionWithExpression)
+        {
+            if (setTypeInformation)
+                mInjeCtor.TypeInformationBuilder.Add<NotMappedClassWithInjections>();
+
+            if (setPropertyInjectionWithExpression)
+                mInjeCtor.TypeInformationBuilder.AddPropertyInjection((NotMappedClassWithInjections c) => c.Greeter);
+
+            var createdInstance = mInjeCtor.Create<NotMappedClassWithInjections>();
+
+            Assert.That(createdInstance, Is.Not.Null);
+            Assert.That(createdInstance, Is.TypeOf<NotMappedClassWithInjections>());
+            
+            if (setTypeInformation)
+            {
+                Assert.That(createdInstance.Calculator, Is.Not.Null);
+                Assert.That(createdInstance.Calculator, Is.InstanceOf<Calculator>());
+            }
+            else
+            {
+                Assert.That(createdInstance.Calculator, Is.Null);
+            }
+
+            if (setPropertyInjectionWithExpression)
+            {
+                Assert.That(createdInstance.Greeter, Is.Not.Null);
+                Assert.That(createdInstance.Greeter, Is.InstanceOf<Greeter>());
+            }
+            else
+            {
+                Assert.That(createdInstance.Greeter, Is.Null);
+            }
+        }
+
+        [Test]
+        public void Create_NotMappedClassWithOtherNotMappedClassAsCtorParameter_InstanceCreated()
+        {
+            var createdObject = mInjeCtor.Create<NotMappedClassWithAnotherNotMappedClassForCtor>();
+
+            Assert.That(createdObject, Is.Not.Null);
+            Assert.That(createdObject.OtherClass, Is.Not.Null);
+            Assert.That(createdObject.OtherClass.Greeter, Is.Not.Null);
+            Assert.That(createdObject.OtherClass.Calculator, Is.Not.Null);
+            Assert.That(createdObject.OtherClass.Greeter, Is.InstanceOf<Greeter>());
+            Assert.That(createdObject.OtherClass.Calculator, Is.InstanceOf<Calculator>());
+        }
+
         #endregion
 
         #region Private Methods

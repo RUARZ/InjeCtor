@@ -153,6 +153,25 @@ namespace InjeCtor.Core.Test.Creation
             Assert.IsNull(obj.Bit);
         }
 
+        [Test]
+        public void Create_NotAddedTypeMappingClass_InstanceCreatedWithPassedParameters()
+        {
+            var createdObject = mCreator.Create<NotMappedClass>();
+
+            Assert.That(createdObject, Is.Not.Null);
+            Assert.That(createdObject.Calculator, Is.Not.Null);
+            Assert.That(createdObject.Greeter, Is.Not.Null);
+            Assert.That(createdObject.Calculator, Is.InstanceOf<Calculator>());
+            Assert.That(createdObject.Greeter, Is.InstanceOf<Greeter>());
+        }
+
+        [Test]
+        public void Create_NotMappedInterfaceAndAbstractClass_InvalidOperationException()
+        {
+            Assert.Throws<InvalidOperationException>(() => mCreator.Create<INotMappedInterface>());
+            Assert.Throws<InvalidOperationException>(() => mCreator.Create<NotMappedAbstractClass>());
+        }
+
         #endregion
 
         #region DummyScope

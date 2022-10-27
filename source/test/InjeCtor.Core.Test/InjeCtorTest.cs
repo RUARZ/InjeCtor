@@ -236,6 +236,18 @@ namespace InjeCtor.Core.Test
             }
         }
 
+        [Test]
+        public void Create_NotAddedTypeMappingClass_InstanceCreatedWithPassedParameters()
+        {
+            var createdObject = mInjeCtor.Create<NotMappedClass>();
+
+            Assert.That(createdObject, Is.Not.Null);
+            Assert.That(createdObject.Calculator, Is.Not.Null);
+            Assert.That(createdObject.Greeter, Is.Not.Null);
+            Assert.That(createdObject.Calculator, Is.InstanceOf<Calculator>());
+            Assert.That(createdObject.Greeter, Is.InstanceOf<Greeter>());
+        }
+
         #endregion
     }
 }

@@ -1,4 +1,5 @@
-﻿using InjeCtor.Core.Test.Interfaces;
+﻿using InjeCtor.Core.Attribute;
+using InjeCtor.Core.Test.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -69,4 +70,41 @@ namespace InjeCtor.Core.Test.TestClasses
 
         public int Number { get; } = 42;
     }
+
+    class NotMappedClass
+    {
+        public NotMappedClass(ICalculator calculator, IGreeter greeter)
+        {
+            Calculator = calculator;
+            Greeter = greeter;
+        }
+
+        public ICalculator Calculator { get; }
+        public IGreeter Greeter { get; }
+    }
+
+    class NotMappedClassWithAnotherNotMappedClassForCtor
+    {
+        public NotMappedClassWithAnotherNotMappedClassForCtor(NotMappedClass otherClass)
+        {
+            OtherClass = otherClass;
+        }
+
+        public NotMappedClass OtherClass { get; }
+    }
+
+    class NotMappedClassWithInjections
+    {
+        public NotMappedClassWithInjections()
+        {
+        }
+
+        [Inject]
+        public ICalculator Calculator { get; set; }
+        public IGreeter Greeter { get; set; }
+    }
+
+    abstract class NotMappedAbstractClass { }
+
+    interface INotMappedInterface { }
 }

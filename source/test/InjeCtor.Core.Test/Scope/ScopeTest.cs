@@ -44,14 +44,6 @@ namespace InjeCtor.Core.Test.Scope
         #region Tests
 
         [Test]
-        public void Create_MappingProviderNull_ThrowsInvalidOperationException()
-        {
-            mScope.MappingProvider = null;
-
-            Assert.Throws<InvalidOperationException>(() => mScope.Create<ICalculator>());
-        }
-
-        [Test]
         public void Create_MappingIsNull_ThrowsInvalidOperationException()
         {
             Assert.Throws<InvalidOperationException>(() => mScope.Create<UnknownClass>());
@@ -212,6 +204,18 @@ namespace InjeCtor.Core.Test.Scope
 
             Assert.That(singletonInstance.IsDisposed, Is.True);
             Assert.That(dispingEventCounter, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Create_NotAddedTypeMappingClass_InstanceCreatedWithPassedParameters()
+        {
+            var createdObject = mScope.Create<NotMappedClass>();
+
+            Assert.That(createdObject, Is.Not.Null);
+            Assert.That(createdObject.Calculator, Is.Not.Null);
+            Assert.That(createdObject.Greeter, Is.Not.Null);
+            Assert.That(createdObject.Calculator, Is.InstanceOf<Calculator>());
+            Assert.That(createdObject.Greeter, Is.InstanceOf<Greeter>());
         }
 
         #endregion
