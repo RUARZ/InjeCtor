@@ -91,6 +91,9 @@ namespace InjeCtor.Core.Test.TestClasses
             if (mDirectSingletons.TryGetValue(typeName, out var instance))
                 mapping.Instance = instance;
 
+            if (mapping.MappedType is null)
+                return null;
+
             return mapping;
         }
 

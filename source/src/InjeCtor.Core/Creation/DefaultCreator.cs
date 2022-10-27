@@ -1,4 +1,5 @@
-﻿using InjeCtor.Core.Registration;
+﻿using InjeCtor.Core.Reflection;
+using InjeCtor.Core.Registration;
 using InjeCtor.Core.Resolve;
 using InjeCtor.Core.Scope;
 using System;
@@ -143,7 +144,7 @@ namespace InjeCtor.Core.Creation
                         parameters[i] = pInfo.DefaultValue;
                     else if (pInfo.ParameterType.IsValueType && Nullable.GetUnderlyingType(pInfo.ParameterType) is null)
                         parameters[i] = Activator.CreateInstance(pInfo.ParameterType);
-                    else if (!pInfo.ParameterType.IsValueType && !IsReferenceTypeNullable(pInfo, info))
+                    else if (!pInfo.ParameterType.IsValueType && !ReflectionHelper.IsReferenceTypeNullable(pInfo, info))
                         parameters[i] = CreateNotMappedType(pInfo.ParameterType, providerToUse, scope, creationHistory);
                     else
                         parameters[i] = null;
@@ -170,29 +171,6 @@ namespace InjeCtor.Core.Creation
             }
 
             return Create(type, providerToUse, scope, true, creationHistory);
-        }
-
-        private bool IsReferenceTypeNullable(ParameterInfo pInfo, ConstructorInfo ctorInfo)
-        {
-            var classNullableContextAttribute = ctorInfo.DeclaringType.CustomAttributes
-                .FirstOrDefault(c => c.AttributeType.Name == "NullableContextAttribute");
-
-            var paramterNullableAttribute = pInfo.CustomAttributes
-                .FirstOrDefault(x => x.AttributeType.Name == "NullableAttribute");
-
-            if (classNullableContextAttribute is null && paramterNullableAttribute is null)
-                return true;
-
-            var classNullableContext = classNullableContextAttribute?.ConstructorArguments
-                ?.First(x => x.ArgumentType.Name == "Byte").Value;
-
-            var nullableParameterContext = paramterNullableAttribute?.ConstructorArguments
-                ?.First(ca => ca.ArgumentType.Name == "Byte").Value;
-
-            nullableParameterContext ??= classNullableContext;
-
-            byte? context = nullableParameterContext as byte?;
-            return context == 0 || context == 2;
         }
 
         private ITypeMappingProvider GetTypeMappingProvider()
