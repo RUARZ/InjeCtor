@@ -1,4 +1,5 @@
 ﻿using InjeCtor.Core.Attribute;
+using InjeCtor.Core.Scope;
 using InjeCtor.Core.Test.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -53,5 +54,27 @@ namespace InjeCtor.Core.Test.TestClasses
 
         [Inject]
         public IGreeter GreeterWithAttribute { get; set; }
+    }
+
+    class ScopeAndInjeCtorInjectionsCtor
+    {
+        public ScopeAndInjeCtorInjectionsCtor(IInjeCtor? injeCtor, IScope? scope)
+        {
+            Injector = injeCtor;
+            Scope = scope;
+        }
+
+        public IInjeCtor? Injector { get; }
+
+        public IScope? Scope { get; }
+    }
+
+    class ScopeAndInjeCtorInjectionsProperties : IDummyInterface
+    {
+        [Inject]
+        public IInjeCtor? Injector { get; set; }
+
+        [Inject]
+        public IScope? Scope { get; set; }
     }
 }

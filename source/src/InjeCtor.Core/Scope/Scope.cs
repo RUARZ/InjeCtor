@@ -21,6 +21,16 @@ namespace InjeCtor.Core.Scope
         private readonly ConcurrentDictionary<Type, object> mScopeSingletons = new ConcurrentDictionary<Type, object>();
 
         private IScopeAwareCreator? mCreator;
+        private IInvoker? mInvoker;
+
+        #endregion
+
+        #region Constructor
+
+        public Scope()
+        {
+            mScopeSingletons[typeof(IScope)] = this;
+        }
 
         #endregion
 
@@ -55,7 +65,17 @@ namespace InjeCtor.Core.Scope
         public ITypeInformationProvider? TypeInformationProvider { get; set; }
 
         /// <inheritdoc/>
-        public IInvoker? Invoker { get; set; }
+        public IInvoker? Invoker
+        {
+            get => mInvoker;
+            set
+            {
+                mInvoker = value;
+
+                if (mInvoker != null)
+                    mScopeSingletons[typeof(IInvoker)] = mInvoker;
+            }
+        }
 
         /// <inheritdoc/>
         public object? Invoke<TObj>(TObj obj, Expression<Func<TObj, Delegate>> expression, params object?[] parameters)
@@ -123,6 +143,10 @@ namespace InjeCtor.Core.Scope
         public void Dispose()
         {
             Disposing?.Invoke(this, EventArgs.Empty);
+
+            // remove the own instance from the scope singletons to prevent endless call of dispose
+            // which will result in stack overflow exception
+            mScopeSingletons.TryRemove(typeof(IScope), out _);
 
             foreach (IDisposable disposable in mScopeSingletons.Values.Where(x => x is IDisposable))
             {

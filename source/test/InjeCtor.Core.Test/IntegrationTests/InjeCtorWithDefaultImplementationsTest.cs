@@ -526,6 +526,55 @@ namespace InjeCtor.Core.Test.IntegrationTests
             Assert.That(scope1.Invoker, Is.Not.SameAs(scope2.Invoker));
         }
 
+        [Test]
+        public void Create_InjeCtorAndScopeInjectionWithCtor_InstancesInjected()
+        {
+            using IScope scope = mInjeCtor.CreateScope();
+
+            var instance1 = mInjeCtor.Create<ScopeAndInjeCtorInjectionsCtor>();
+            var instance2 = scope.Create<ScopeAndInjeCtorInjectionsCtor>();
+
+            Assert.That(instance1, Is.Not.SameAs(instance2));
+
+            Assert.That(instance1.Injector, Is.Not.Null);
+            Assert.That(instance1.Scope, Is.Not.Null);
+
+            Assert.That(instance2.Injector, Is.Not.Null);
+            Assert.That(instance2.Scope, Is.Not.Null);
+
+            Assert.That(instance1.Scope, Is.Not.SameAs(instance2.Scope));
+            Assert.That(instance2.Scope, Is.SameAs(scope));
+            Assert.That(instance1.Injector, Is.SameAs(instance2.Injector));
+            Assert.That(instance1.Injector, Is.SameAs(mInjeCtor));
+        }
+
+        [Test]
+        public void Create_InjeCtorAndScopeInjectionWithTypeInformation_InstancesInjected()
+        {
+            mInjeCtor.Mapper.Add<IDummyInterface>().As<ScopeAndInjeCtorInjectionsProperties>();
+
+            using IScope scope = mInjeCtor.CreateScope();
+
+            var createdInstance1 = mInjeCtor.Create<IDummyInterface>();
+            var createdInstance2 = scope.Create<IDummyInterface>();
+
+            var instance1 = AssertAndGetCastedType<ScopeAndInjeCtorInjectionsProperties>(createdInstance1);
+            var instance2 = AssertAndGetCastedType<ScopeAndInjeCtorInjectionsProperties>(createdInstance2);
+
+            Assert.That(instance1, Is.Not.SameAs(instance2));
+
+            Assert.That(instance1.Injector, Is.Not.Null);
+            Assert.That(instance1.Scope, Is.Not.Null);
+
+            Assert.That(instance2.Injector, Is.Not.Null);
+            Assert.That(instance2.Scope, Is.Not.Null);
+
+            Assert.That(instance1.Scope, Is.Not.SameAs(instance2.Scope));
+            Assert.That(instance2.Scope, Is.SameAs(scope));
+            Assert.That(instance1.Injector, Is.SameAs(instance2.Injector));
+            Assert.That(instance1.Injector, Is.SameAs(mInjeCtor));
+        }
+
         #endregion
 
         #region Private Methods

@@ -89,6 +89,12 @@ namespace InjeCtor.Core
 
             // setup the default scope
             mScope = CreateAndSetupScope();
+
+            mGlobalSingletons[typeof(IInjeCtor)] = this;
+            // only to add, if not already present, mapping for own interface and as own implementation
+            // the mapping type in this case should not realy matter because we already set this instance to
+            // global singleton.
+            AddDefaultMappingsIfNeeded<IInjeCtor, InjeCtor>(true);
         }
 
         #endregion
@@ -151,6 +157,10 @@ namespace InjeCtor.Core
                     scope.Dispose();
                 }
             }
+
+            // remove the own instance from the singletons to prevent endless call of dispose
+            // which will result in stack overflow exception
+            mGlobalSingletons.TryRemove(typeof(IInjeCtor), out _);
 
             foreach (IDisposable disposable in mGlobalSingletons.Values.Where(x => x is IDisposable))
             {
@@ -219,12 +229,19 @@ namespace InjeCtor.Core
             return instance;
         }
 
-        private void AddDefaultMappingsIfNeeded<TInterface, TDefaultImplementation>() where TDefaultImplementation : TInterface
+        private void AddDefaultMappingsIfNeeded<TInterface, TDefaultImplementation>(bool globalSingleton = false) where TDefaultImplementation : TInterface
         {
             ITypeMapping? mapping = Mapper.GetTypeMapping<TInterface>();
 
-            if (mapping is null || mapping.MappedType is null)
-                Mapper.Add<TInterface>().As<TDefaultImplementation>(); // in case no other implementation defined then use default one
+            if (mapping != null && mapping.MappedType != null)
+                return;
+
+            ITypeMapping<TInterface> newMapping = Mapper.Add<TInterface>();
+
+            if (globalSingleton)
+                newMapping.AsSingleton<TDefaultImplementation>();
+            else
+                newMapping.AsScopeSingleton<TDefaultImplementation>();
         }
 
         #endregion

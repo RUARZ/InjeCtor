@@ -71,7 +71,7 @@ namespace InjeCtor.Core.Test
             Assert.That(secondObject, Is.Not.Null);
             Assert.That(secondObject, Is.InstanceOf(resultType));
             Assert.That(createdObject, Is.SameAs(secondObject));
-            Assert.That(mCreator.CreatedSingletons.Count, Is.EqualTo(1));
+            Assert.That(mCreator.CreatedSingletons.Count(x => x.Key != typeof(IInjeCtor)), Is.EqualTo(1));
             Assert.That(mCreator.CreatedSingletons[requestType], Is.InstanceOf(resultType));
         }
 
@@ -88,7 +88,7 @@ namespace InjeCtor.Core.Test
             Assert.That(createdObject, Is.SameAs(mInjeCtor.Create<BaseClassForSingleton>()));
             Assert.That(createdObject, Is.SameAs(mInjeCtor.Create<BaseClassForSingleton>()));
             Assert.That(SingletonClass.CreationCounter, Is.EqualTo(1));
-            Assert.That(mCreator.CreatedSingletons.Count, Is.EqualTo(1));
+            Assert.That(mCreator.CreatedSingletons.Count(x => x.Key != typeof(IInjeCtor)), Is.EqualTo(1));
             Assert.That(mCreator.CreatedSingletons[typeof(BaseClassForSingleton)], Is.InstanceOf(typeof(SingletonClass)));
         }
 
@@ -107,7 +107,7 @@ namespace InjeCtor.Core.Test
             Assert.That(singleton, Is.SameAs(mInjeCtor.Create<BaseClassForSingleton>()));
             Assert.That(createdObject, Is.SameAs(singleton));
             Assert.That(SingletonClass.CreationCounter, Is.EqualTo(1));
-            Assert.That(mCreator.CreatedSingletons.Count, Is.EqualTo(1));
+            Assert.That(mCreator.CreatedSingletons.Count(x => x.Key != typeof(IInjeCtor)), Is.EqualTo(1));
             Assert.That(mCreator.CreatedSingletons[typeof(BaseClassForSingleton)], Is.InstanceOf(typeof(SingletonClass)));
         }
 

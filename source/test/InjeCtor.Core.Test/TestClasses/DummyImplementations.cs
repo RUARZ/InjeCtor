@@ -110,6 +110,11 @@ namespace InjeCtor.Core.Test.TestClasses
             {
                 mapping.MappedType = typeof(Invoker);
             }
+            else if (typeName == typeof(IInjeCtor).FullName)
+            {
+                mapping.MappedType = typeof(InjeCtor);
+                mapping.CreationInstruction = CreationInstruction.Singleton;
+            }
             else if (typeName == typeof(NotMappedClass).FullName)
                 return null;
 
