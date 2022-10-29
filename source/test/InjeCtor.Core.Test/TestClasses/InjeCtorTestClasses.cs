@@ -46,6 +46,18 @@ namespace InjeCtor.Core.Test.TestClasses
         }
     }
 
+    class ScopeCreationCounter
+    {
+        public static int CreationCounter { get; private set; }
+
+        public ScopeCreationCounter()
+        {
+            CreationCounter++;
+        }
+
+        public static void ResetCounter() => CreationCounter = 0;
+    }
+
     interface IDummyInterface { }
 
     class DummyClassWithInjectAttributes : IDummyInterface
