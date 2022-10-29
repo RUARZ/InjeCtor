@@ -1,4 +1,5 @@
 ﻿using InjeCtor.Core.Creation;
+using InjeCtor.Core.Invoke;
 using InjeCtor.Core.Registration;
 using InjeCtor.Core.Scope;
 using InjeCtor.Core.TypeInformation;
@@ -11,7 +12,7 @@ namespace InjeCtor.Core
     /// <summary>
     /// The core / kernel methods.
     /// </summary>
-    public interface IInjeCtor : ICreator, IDisposable
+    public interface IInjeCtor : ICreator, IInvoker, IDisposable
     {
         /// <summary>
         /// The mapper to create the <see cref="ITypeMapping"/>s.

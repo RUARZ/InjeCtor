@@ -49,18 +49,35 @@ namespace InjeCtor.Core.Test.Invoke
         [Test]
         public void Invoke_NoAdditionalParameters_Success()
         {
-            mInvoker.Invoke(mObject, o => o.Greet);
+            object? result = mInvoker.Invoke(mObject, o => o.Greet);
 
             Assert.That(mObject.Greeter, Is.Not.Null);
             Assert.That(mObject.LastGreeting, Is.EqualTo("Greetings to 'Herbert'!"));
+            Assert.That(result, Is.Null);
         }
 
         [Test]
         public void Invoke_AdditionalParameters_Success()
         {
-            mInvoker.Invoke(mObject, o => o.Subtract, 48, 6);
+            object? result = mInvoker.Invoke(mObject, o => o.Subtract, 48, 6);
 
             Assert.That(mObject.LastCalculationResult, Is.EqualTo(42));
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result, Is.InstanceOf<int>());
+            Assert.That(result, Is.EqualTo(42));
+        }
+
+        [TestCase(2, 3, 10, "Some Name", 50)]
+        [TestCase(22, 18, 2, "Another Name", 80)]
+        [TestCase(33, 2, 8, "Some Name", 280)]
+        public void Invoke_MultipleAdditionalParameters_Success(int number1, int number2, int number3, string name, int expectedResult)
+        {
+            object? result = mInvoker.Invoke(mObject, o => o.MultipleDifferentParameters, number1, number2, number3, name);
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result, Is.InstanceOf<int>());
+            Assert.That(result, Is.EqualTo(result));
+            Assert.That(mObject.LastGreeting, Is.EqualTo($"Greetings to '{name}'!"));
         }
 
         #endregion

@@ -1,5 +1,6 @@
 ﻿using InjeCtor.Core.Creation;
 using InjeCtor.Core.Exceptions;
+using InjeCtor.Core.Invoke;
 using InjeCtor.Core.Registration;
 using InjeCtor.Core.Scope;
 using InjeCtor.Core.Test.Interfaces;
@@ -9,6 +10,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -204,6 +206,7 @@ namespace InjeCtor.Core.Test.Creation
             public ITypeMappingProvider? MappingProvider { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
             public ITypeInformationProvider? TypeInformationProvider { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
             public IScopeAwareCreator? Creator { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+            public IScopeAwareInvoker? Invoker { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
             public event EventHandler<RequestSingletonCreationEventArgs>? RequestSingletonCreationInstance;
             public event EventHandler? Disposing;
@@ -244,6 +247,11 @@ namespace InjeCtor.Core.Test.Creation
                     return singleton;
 
                 return null;
+            }
+
+            public object? Invoke<TObj>(TObj obj, Expression<Func<TObj, Delegate>> expression, params object?[] parameters)
+            {
+                throw new NotImplementedException();
             }
 
             public void SetSingletons(IReadOnlyDictionary<Type, object> singletons)

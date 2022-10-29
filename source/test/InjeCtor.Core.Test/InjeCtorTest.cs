@@ -24,7 +24,6 @@ namespace InjeCtor.Core.Test
         private DummyCreator mCreator;
         private InjeCtor mInjeCtor;
 
-
         #endregion
 
         #region SetUp / TearDown

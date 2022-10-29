@@ -19,14 +19,20 @@ namespace InjeCtor.Core.Test.TestClasses
             LastGreeting = greeter.Greet("Herbert");
         }
 
-        public void Add(ICalculator calcultator)
-        {
-            LastCalculationResult = calcultator.Add(10, 20);
-        }
-
-        public void Subtract(ICalculator calculator, int a, int b)
+        public int Subtract(ICalculator calculator, int a, int b)
         {
             LastCalculationResult = calculator.Subtract(a, b);
+            return LastCalculationResult;
+        }
+
+        public int MultipleDifferentParameters(int number1, ICalculator calculator, string name, int number2, IGreeter greeter, int number3)
+        {
+            int result = calculator.Add(number1, number2);
+            result = calculator.Multiply(result, number3);
+
+            LastGreeting = greeter.Greet(name);
+
+            return result;
         }
     }
 }

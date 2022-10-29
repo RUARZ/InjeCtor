@@ -1,13 +1,13 @@
-﻿using System.Runtime.CompilerServices;
-using InjeCtor.Core.Creation;
+﻿using InjeCtor.Core.Creation;
+using InjeCtor.Core.Invoke;
 using InjeCtor.Core.Registration;
 using InjeCtor.Core.TypeInformation;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Reflection;
+using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("InjeCtor.Core.Test")]
 namespace InjeCtor.Core.Scope
@@ -21,6 +21,7 @@ namespace InjeCtor.Core.Scope
         private readonly ConcurrentDictionary<Type, object> mScopeSingletons = new ConcurrentDictionary<Type, object>();
 
         private IScopeAwareCreator? mCreator;
+        private IScopeAwareInvoker? mInvoker;
 
         #endregion
 
@@ -53,6 +54,25 @@ namespace InjeCtor.Core.Scope
 
         /// <inheritdoc/>
         public ITypeInformationProvider? TypeInformationProvider { get; set; }
+
+        /// <inheritdoc/>
+        public IScopeAwareInvoker? Invoker 
+        {
+            get => mInvoker;
+            set
+            {
+                mInvoker = value;
+
+                if (mInvoker != null)
+                    mInvoker.Scope = this;
+            }
+        }
+
+        /// <inheritdoc/>
+        public object? Invoke<TObj>(TObj obj, Expression<Func<TObj, Delegate>> expression, params object?[] parameters)
+        {
+            return mInvoker?.Invoke(obj, expression, parameters);
+        }
 
         /// <inheritdoc/>
         public object Create(Type type)

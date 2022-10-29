@@ -1,4 +1,5 @@
 ﻿using InjeCtor.Core.Creation;
+using InjeCtor.Core.Invoke;
 using InjeCtor.Core.Registration;
 using InjeCtor.Core.Scope;
 using InjeCtor.Core.Test.Interfaces;
@@ -13,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace InjeCtor.Core.Test.TestClasses
 {
-    class DummyTypeMapping : ITypeMapping
+    class SimpleDummyTypeMapping : ITypeMapping
     {
         public Type SourceType { get; set; }
 
@@ -22,6 +23,29 @@ namespace InjeCtor.Core.Test.TestClasses
         public CreationInstruction CreationInstruction { get; set; }
 
         public object? Instance { get; set; }
+    }
+
+    class DummyTypeMapping<T> : SimpleDummyTypeMapping, ITypeMapping<T>
+    {
+        public ITypeMapping<T> As<T1>() where T1 : T
+        {
+            return this;
+        }
+
+        public ITypeMapping<T> AsScopeSingleton<T1>() where T1 : T
+        {
+            return this;
+        }
+
+        public ITypeMapping<T> AsSingleton<T1>(T1 instance) where T1 : T
+        {
+            return this;
+        }
+
+        public ITypeMapping<T> AsSingleton<T1>() where T1 : T
+        {
+            return this;
+        }
     }
 
     class DummyTypeMapper : ITypeMapper
@@ -44,11 +68,11 @@ namespace InjeCtor.Core.Test.TestClasses
 
         public ITypeMapping<T> Add<T>()
         {
-            DummyTypeMapping mapping = new DummyTypeMapping();
+            DummyTypeMapping<T> mapping = new DummyTypeMapping<T>();
             mapping.SourceType = typeof(T);
             mapping.MappedType = typeof(T);
             MappingAdded?.Invoke(this, new MappingAddedEventArgs(mapping));
-            return null;
+            return mapping;
         }
 
         public ITypeMapping? GetTypeMapping<T>()
@@ -58,7 +82,7 @@ namespace InjeCtor.Core.Test.TestClasses
 
         public ITypeMapping? GetTypeMapping(Type type)
         {
-            DummyTypeMapping mapping = new DummyTypeMapping
+            SimpleDummyTypeMapping mapping = new SimpleDummyTypeMapping
             {
                 SourceType = type,
             };
@@ -81,6 +105,10 @@ namespace InjeCtor.Core.Test.TestClasses
             {
                 mapping.MappedType = typeof(NonDisposableSingleton);
                 mapping.CreationInstruction = CreationInstruction.Singleton;
+            }
+            else if (typeName == typeof(IScopeAwareInvoker).FullName)
+            {
+                mapping.MappedType = typeof(Invoker);
             }
             else if (typeName == typeof(NotMappedClass).FullName)
                 return null;
@@ -203,6 +231,8 @@ namespace InjeCtor.Core.Test.TestClasses
                 return new NonDisposableSingleton();
             else if (typeName == typeof(NotMappedClass).FullName)
                 return new NotMappedClass(new Calculator(), new Greeter());
+            else if (typeName == typeof(IScopeAwareInvoker).FullName)
+                return new Invoker();
 
             throw new InvalidOperationException($"unknown type '{typeName}'!");
         }
@@ -264,6 +294,7 @@ namespace InjeCtor.Core.Test.TestClasses
         public ITypeInformationProvider? TypeInformationProvider { get; set; }
         public IScopeAwareCreator? Creator { get; set; }
         public ITypeMappingProvider? MappingProvider { get; set; }
+        public IScopeAwareInvoker? Invoker { get; set; }
 
         public object Create(Type type)
         {
@@ -311,6 +342,11 @@ namespace InjeCtor.Core.Test.TestClasses
         public void SetSingletons(IReadOnlyDictionary<Type, object> singletons)
         {
 
+        }
+
+        public object? Invoke<TObj>(TObj obj, Expression<Func<TObj, Delegate>> expression, params object?[] parameters)
+        {
+            return null;
         }
     }
 }

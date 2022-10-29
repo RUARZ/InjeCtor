@@ -1,4 +1,5 @@
 ﻿using InjeCtor.Core.Creation;
+using InjeCtor.Core.Invoke;
 using InjeCtor.Core.Registration;
 using InjeCtor.Core.Scope;
 using InjeCtor.Core.TypeInformation;
@@ -6,6 +7,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 
 namespace InjeCtor.Core
@@ -82,10 +84,8 @@ namespace InjeCtor.Core
             mCreator.MappingProvider = mMappingProvider;
             mCreator.SetSingletons(mGlobalSingletons);
 
-            ITypeMapping? mapping = Mapper.GetTypeMapping<IScope>();
-
-            if (mapping is null || mapping.MappedType is null)
-                Mapper.Add<IScope>().As<Scope.Scope>(); // in case no other implementation defined then use default one
+            AddDefaultMappingsIfNeeded<IScope, Scope.Scope>();
+            AddDefaultMappingsIfNeeded<IScopeAwareInvoker, Invoker>();
 
             // setup the default scope
             mScope = CreateAndSetupScope();
@@ -124,6 +124,12 @@ namespace InjeCtor.Core
         public T Create<T>()
         {
             return (T)Create(typeof(T));
+        }
+
+        /// <inheritdoc/>
+        public object? Invoke<TObj>(TObj obj, Expression<Func<TObj, Delegate>> expression, params object?[] parameters)
+        {
+            return mScope?.Invoke(obj, expression, parameters);
         }
 
         /// <inheritdoc/>
@@ -176,10 +182,13 @@ namespace InjeCtor.Core
 
         private IScope CreateAndSetupScope()
         {
+            IScopeAwareInvoker invoker = mCreator.Create<IScopeAwareInvoker>();
+
             IScope scope = mCreator.Create<IScope>();
             scope.Creator = mCreator;
             scope.TypeInformationProvider = TypeInformationProvider;
             scope.MappingProvider = MappingProvider;
+            scope.Invoker = invoker;
             scope.Disposing += Scope_Disposing;
             scope.RequestSingletonCreationInstance += Scope_RequestSingletonCreationInstance;
 
@@ -207,6 +216,14 @@ namespace InjeCtor.Core
             }
 
             return instance;
+        }
+
+        private void AddDefaultMappingsIfNeeded<TInterface, TDefaultImplementation>() where TDefaultImplementation : TInterface
+        {
+            ITypeMapping? mapping = Mapper.GetTypeMapping<TInterface>();
+
+            if (mapping is null || mapping.MappedType is null)
+                Mapper.Add<TInterface>().As<TDefaultImplementation>(); // in case no other implementation defined then use default one
         }
 
         #endregion

@@ -13,17 +13,15 @@ namespace InjeCtor.Core.Invoke
     /// <summary>
     /// The default implementation of <see cref="IInvoker"/>.
     /// </summary>
-    internal class Invoker : IInvoker
+    internal class Invoker : IScopeAwareInvoker
     {
-
-
         #region IInvoker
 
         /// <inheritdoc/>
         public IScope? Scope { get; set; }
 
         /// <inheritdoc/>
-        public void Invoke<TObj>(TObj obj, Expression<Func<TObj, Delegate>> expression, params object?[] parameters)
+        public object? Invoke<TObj>(TObj obj, Expression<Func<TObj, Delegate>> expression, params object?[] parameters)
         {
             if (Scope is null)
                 throw new InvalidOperationException("Scope is not set and therefore can't invoke methods!");
@@ -33,7 +31,7 @@ namespace InjeCtor.Core.Invoke
             if (methodInfo == null)
                 throw new InvalidOperationException("The passed expression could not be resolved to invoke a method!");
 
-            ExecuteMethod(methodInfo, obj, parameters);
+            return ExecuteMethod(methodInfo, obj, parameters);
         }
 
         #endregion

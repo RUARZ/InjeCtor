@@ -19,6 +19,7 @@ namespace InjeCtor.Core.Test.IntegrationTests
         #region Private Fields
 
         private IInjeCtor mInjeCtor;
+        private MethodInvokations mObject;
 
         #endregion
 
@@ -27,6 +28,8 @@ namespace InjeCtor.Core.Test.IntegrationTests
         [SetUp]
         public void SetUp()
         {
+            mObject = new MethodInvokations();
+
             mInjeCtor = new InjeCtor();
 
             mInjeCtor.Mapper.Add<IGreeter>().As<Greeter>();
@@ -460,6 +463,67 @@ namespace InjeCtor.Core.Test.IntegrationTests
 
             Assert.That(createdObject, Is.Not.Null);
             Assert.That(createdObject, Is.InstanceOf<CircularReferenceClassA>());
+        }
+
+        [Test]
+        public void Invoke_NoAdditionalParameters_Success()
+        {
+            object? result = mInjeCtor.Invoke(mObject, o => o.Greet);
+
+            Assert.That(mObject.Greeter, Is.Not.Null);
+            Assert.That(mObject.LastGreeting, Is.EqualTo("Greetings to 'Herbert'!"));
+            Assert.That(result, Is.Null);
+        }
+
+        [Test]
+        public void Invoke_AdditionalParameters_Success()
+        {
+            object? result = mInjeCtor.Invoke(mObject, o => o.Subtract, 48, 6);
+
+            Assert.That(mObject.LastCalculationResult, Is.EqualTo(42));
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result, Is.InstanceOf<int>());
+            Assert.That(result, Is.EqualTo(42));
+        }
+
+        [TestCase(2, 3, 10, "Some Name", 50)]
+        [TestCase(22, 18, 2, "Another Name", 80)]
+        [TestCase(33, 2, 8, "Some Name", 280)]
+        public void Invoke_MultipleAdditionalParameters_Success(int number1, int number2, int number3, string name, int expectedResult)
+        {
+            object? result = mInjeCtor.Invoke(mObject, o => o.MultipleDifferentParameters, number1, number2, number3, name);
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result, Is.InstanceOf<int>());
+            Assert.That(result, Is.EqualTo(result));
+            Assert.That(mObject.LastGreeting, Is.EqualTo($"Greetings to '{name}'!"));
+        }
+
+        [Test]
+        public void CreateScope_DifferentScopesWithCorrectInstances()
+        {
+            using IScope scope1 = mInjeCtor.CreateScope();
+            using IScope scope2 = mInjeCtor.CreateScope();
+
+            Assert.That(scope1, Is.Not.Null);
+            Assert.That(scope2, Is.Not.Null);
+            Assert.That(scope1, Is.Not.SameAs(scope2));
+
+            Assert.That(scope1.Creator, Is.Not.Null);
+            Assert.That(scope2.Creator, Is.Not.Null);
+            Assert.That(scope1.Creator, Is.SameAs(scope2.Creator));
+
+            Assert.That(scope1.MappingProvider, Is.Not.Null);
+            Assert.That(scope2.MappingProvider, Is.Not.Null);
+            Assert.That(scope1.MappingProvider, Is.SameAs(scope2.MappingProvider));
+
+            Assert.That(scope1.TypeInformationProvider, Is.Not.Null);
+            Assert.That(scope2.TypeInformationProvider, Is.Not.Null);
+            Assert.That(scope1.TypeInformationProvider, Is.SameAs(scope2.TypeInformationProvider));
+
+            Assert.That(scope1.Invoker, Is.Not.Null);
+            Assert.That(scope2.Invoker, Is.Not.Null);
+            Assert.That(scope1.Invoker, Is.Not.SameAs(scope2.Invoker));
         }
 
         #endregion
