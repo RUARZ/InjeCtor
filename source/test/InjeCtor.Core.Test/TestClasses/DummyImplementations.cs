@@ -294,7 +294,7 @@ namespace InjeCtor.Core.Test.TestClasses
         public ITypeInformationProvider? TypeInformationProvider { get; set; }
         public IScopeAwareCreator? Creator { get; set; }
         public ITypeMappingProvider? MappingProvider { get; set; }
-        public IScopeAwareInvoker? Invoker { get; set; }
+        public IInvoker? Invoker { get; set; }
 
         public object Create(Type type)
         {

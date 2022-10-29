@@ -183,8 +183,9 @@ namespace InjeCtor.Core
         private IScope CreateAndSetupScope()
         {
             IScopeAwareInvoker invoker = mCreator.Create<IScopeAwareInvoker>();
-
             IScope scope = mCreator.Create<IScope>();
+
+            invoker.Scope = scope;
             scope.Creator = mCreator;
             scope.TypeInformationProvider = TypeInformationProvider;
             scope.MappingProvider = MappingProvider;

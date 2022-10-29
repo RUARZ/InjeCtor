@@ -206,7 +206,7 @@ namespace InjeCtor.Core.Test.Creation
             public ITypeMappingProvider? MappingProvider { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
             public ITypeInformationProvider? TypeInformationProvider { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
             public IScopeAwareCreator? Creator { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-            public IScopeAwareInvoker? Invoker { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+            public IInvoker? Invoker { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
             public event EventHandler<RequestSingletonCreationEventArgs>? RequestSingletonCreationInstance;
             public event EventHandler? Disposing;

@@ -26,7 +26,7 @@ namespace InjeCtor.Core.Scope
         /// <summary>
         /// Implementation of <see cref="IScopeAwareInvoker"/> to provide the <see cref="IScopeAwareInvoker"/> methods for the scope.
         /// </summary>
-        IScopeAwareInvoker? Invoker { get; set; }
+        IInvoker? Invoker { get; set; }
 
         /// <summary>
         /// Tries to get already instantiated singleton instance for <typeparamref name="T"/>.

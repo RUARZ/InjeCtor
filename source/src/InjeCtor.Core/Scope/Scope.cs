@@ -21,7 +21,6 @@ namespace InjeCtor.Core.Scope
         private readonly ConcurrentDictionary<Type, object> mScopeSingletons = new ConcurrentDictionary<Type, object>();
 
         private IScopeAwareCreator? mCreator;
-        private IScopeAwareInvoker? mInvoker;
 
         #endregion
 
@@ -56,22 +55,12 @@ namespace InjeCtor.Core.Scope
         public ITypeInformationProvider? TypeInformationProvider { get; set; }
 
         /// <inheritdoc/>
-        public IScopeAwareInvoker? Invoker 
-        {
-            get => mInvoker;
-            set
-            {
-                mInvoker = value;
-
-                if (mInvoker != null)
-                    mInvoker.Scope = this;
-            }
-        }
+        public IInvoker? Invoker { get; set; }
 
         /// <inheritdoc/>
         public object? Invoke<TObj>(TObj obj, Expression<Func<TObj, Delegate>> expression, params object?[] parameters)
         {
-            return mInvoker?.Invoke(obj, expression, parameters);
+            return Invoker?.Invoke(obj, expression, parameters);
         }
 
         /// <inheritdoc/>
