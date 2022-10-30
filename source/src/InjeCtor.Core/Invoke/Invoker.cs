@@ -34,11 +34,25 @@ namespace InjeCtor.Core.Invoke
             return ExecuteMethod(methodInfo, obj, parameters);
         }
 
+        /// <inheritdoc/>
+        public object? Invoke(Expression<Func<Delegate>> expression, params object?[] parameters)
+        {
+            if (Scope is null)
+                throw new InvalidOperationException("Scope is not set and therefore can't invoke methods!");
+
+            MethodInfo? methodInfo = ExpressionParser.GetMethodInfo(expression);
+
+            if (methodInfo == null)
+                throw new InvalidOperationException("The passed expression could not be resolved to invoke a method!");
+
+            return ExecuteMethod(methodInfo, null, parameters);
+        }
+
         #endregion
 
         #region Private Methods
 
-        private object? ExecuteMethod<TObj>(MethodInfo method, TObj obj, params object?[] parameters)
+        private object? ExecuteMethod(MethodInfo method, object? obj, params object?[] parameters)
         {
             List<object?> parameterList = new List<object?>(parameters);
             ParameterInfo[] methodParameters = method.GetParameters();

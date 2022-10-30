@@ -19,6 +19,13 @@ namespace InjeCtor.Core.Invoke
         /// <param name="expression">Expression to get the method to invoke.</param>
         /// <param name="parameters">Additional parameters if not all can be determined automatically.</param>
         object? Invoke<TObj>(TObj obj, Expression<Func<TObj, Delegate>> expression, params object?[] parameters);
+
+        /// <summary>
+        /// Invoke the method, of a static class, defined in the <paramref name="expression"/> and inject all possible parameters.
+        /// </summary>
+        /// <param name="expression">Expression to get the method to invoke.</param>
+        /// <param name="parameters">Additional parameters if not all can be determined automatically.</param>
+        object? Invoke(Expression<Func<Delegate>> expression, params object?[] parameters);
     }
 
     /// <summary>

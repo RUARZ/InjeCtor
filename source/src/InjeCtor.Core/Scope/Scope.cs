@@ -84,6 +84,12 @@ namespace InjeCtor.Core.Scope
         }
 
         /// <inheritdoc/>
+        public object? Invoke(Expression<Func<Delegate>> expression, params object?[] parameters)
+        {
+            return Invoker?.Invoke(expression, parameters);
+        }
+
+        /// <inheritdoc/>
         public object Create(Type type)
         {
             ITypeMapping? mapping = MappingProvider?.GetTypeMapping(type);

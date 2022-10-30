@@ -49,6 +49,22 @@ namespace InjeCtor.Core.Expression
             return methodInfo;
         }
 
+        /// <summary>
+        /// Tries to resolve the passed <paramref name="expression"/> and get a <see cref="MethodInfo"/> from it.
+        /// </summary>
+        /// <param name="expression">The expression to resolve.</param>
+        /// <returns>The resolved <see cref="MethodInfo"/> or <see langword="null"/> if the <paramref name="expression"/> could not
+        /// be resolved to a <see cref="MethodInfo"/>.</returns>
+        public static MethodInfo? GetMethodInfo(Expression<Func<Delegate>> expression)
+        {
+            UnaryExpression? unaryExpression = expression.Body as UnaryExpression;
+            MethodCallExpression? methodCallExpression = unaryExpression?.Operand as MethodCallExpression;
+            ConstantExpression? methodCallObject = methodCallExpression?.Object as ConstantExpression;
+            MethodInfo? methodInfo = methodCallObject?.Value as MethodInfo;
+
+            return methodInfo;
+        }
+
         #endregion
     }
 }

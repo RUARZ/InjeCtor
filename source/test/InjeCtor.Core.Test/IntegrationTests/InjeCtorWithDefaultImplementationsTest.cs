@@ -19,7 +19,7 @@ namespace InjeCtor.Core.Test.IntegrationTests
         #region Private Fields
 
         private IInjeCtor mInjeCtor;
-        private MethodInvokations mObject;
+        private MethodInvocations mObject;
 
         #endregion
 
@@ -28,7 +28,7 @@ namespace InjeCtor.Core.Test.IntegrationTests
         [SetUp]
         public void SetUp()
         {
-            mObject = new MethodInvokations();
+            mObject = new MethodInvocations();
 
             mInjeCtor = new InjeCtor();
 
@@ -497,6 +497,29 @@ namespace InjeCtor.Core.Test.IntegrationTests
             Assert.That(result, Is.InstanceOf<int>());
             Assert.That(result, Is.EqualTo(result));
             Assert.That(mObject.LastGreeting, Is.EqualTo($"Greetings to '{name}'!"));
+        }
+
+        [Test]
+        public void Invoke_StaticMethod_Success()
+        {
+            object? result = mInjeCtor.Invoke(() => StaticMethodInvocations.Add, 38, 4);
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result, Is.InstanceOf<int>());
+            Assert.That(result, Is.EqualTo(42));
+        }
+
+        [TestCase(2, 3, 10, "Some Name", 50)]
+        [TestCase(22, 18, 2, "Another Name", 80)]
+        [TestCase(33, 2, 8, "Some Name", 280)]
+        public void Invoke_StaticMethodMultipleAdditionalParameters_Success(int number1, int number2, int number3, string name, int expectedResult)
+        {
+            object? result = mInjeCtor.Invoke(() => StaticMethodInvocations.MultipleDifferentParameters, number1, number2, number3, name);
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result, Is.InstanceOf<int>());
+            Assert.That(result, Is.EqualTo(result));
+            Assert.That(StaticMethodInvocations.LastGreeting, Is.EqualTo($"Greetings to '{name}'!"));
         }
 
         [Test]

@@ -1,13 +1,8 @@
 ﻿using InjeCtor.Core.Test.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace InjeCtor.Core.Test.TestClasses
 {
-    class MethodInvokations
+    class MethodInvocations
     {
         public IGreeter Greeter { get; private set; }
         public string LastGreeting { get; private set; }
@@ -26,6 +21,26 @@ namespace InjeCtor.Core.Test.TestClasses
         }
 
         public int MultipleDifferentParameters(int number1, ICalculator calculator, string name, int number2, IGreeter greeter, int number3)
+        {
+            int result = calculator.Add(number1, number2);
+            result = calculator.Multiply(result, number3);
+
+            LastGreeting = greeter.Greet(name);
+
+            return result;
+        }
+    }
+
+    static class StaticMethodInvocations
+    {
+        public static string? LastGreeting { get; set; }
+
+        public static int Add(ICalculator calculation, int number1, int number2)
+        {
+            return calculation.Add(number1, number2);
+        }
+
+        public static int MultipleDifferentParameters(int number1, ICalculator calculator, string name, int number2, IGreeter greeter, int number3)
         {
             int result = calculator.Add(number1, number2);
             result = calculator.Multiply(result, number3);

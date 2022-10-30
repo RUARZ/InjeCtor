@@ -18,7 +18,7 @@ namespace InjeCtor.Core.Test.Invoke
         private DummyScope mScope;
         private DummyCreator mCreator;
         private DummyTypeMapper mTypeMapper;
-        private MethodInvokations mObject;
+        private MethodInvocations mObject;
 
         #endregion
 
@@ -27,7 +27,7 @@ namespace InjeCtor.Core.Test.Invoke
         [SetUp]
         public void SetUp()
         {
-            mObject = new MethodInvokations();
+            mObject = new MethodInvocations();
 
             mScope = new DummyScope();
             mCreator = new DummyCreator();
@@ -40,6 +40,8 @@ namespace InjeCtor.Core.Test.Invoke
             mInvoker = new Invoker();
 
             mInvoker.Scope = mScope;
+
+            StaticMethodInvocations.LastGreeting = null;
         }
 
         #endregion
@@ -78,6 +80,29 @@ namespace InjeCtor.Core.Test.Invoke
             Assert.That(result, Is.InstanceOf<int>());
             Assert.That(result, Is.EqualTo(result));
             Assert.That(mObject.LastGreeting, Is.EqualTo($"Greetings to '{name}'!"));
+        }
+
+        [Test]
+        public void Invoke_StaticMethod_Success()
+        {
+            object? result = mInvoker.Invoke(() => StaticMethodInvocations.Add, 38, 4);
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result, Is.InstanceOf<int>());
+            Assert.That(result, Is.EqualTo(42));
+        }
+
+        [TestCase(2, 3, 10, "Some Name", 50)]
+        [TestCase(22, 18, 2, "Another Name", 80)]
+        [TestCase(33, 2, 8, "Some Name", 280)]
+        public void Invoke_StaticMethodMultipleAdditionalParameters_Success(int number1, int number2, int number3, string name, int expectedResult)
+        {
+            object? result = mInvoker.Invoke(() => StaticMethodInvocations.MultipleDifferentParameters, number1, number2, number3, name);
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result, Is.InstanceOf<int>());
+            Assert.That(result, Is.EqualTo(result));
+            Assert.That(StaticMethodInvocations.LastGreeting, Is.EqualTo($"Greetings to '{name}'!"));
         }
 
         #endregion

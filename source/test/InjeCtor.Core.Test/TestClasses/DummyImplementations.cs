@@ -353,5 +353,10 @@ namespace InjeCtor.Core.Test.TestClasses
         {
             return null;
         }
+
+        public object? Invoke(Expression<Func<Delegate>> expression, params object?[] parameters)
+        {
+            return null;
+        }
     }
 }

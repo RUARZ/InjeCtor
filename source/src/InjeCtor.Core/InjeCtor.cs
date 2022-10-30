@@ -139,6 +139,12 @@ namespace InjeCtor.Core
         }
 
         /// <inheritdoc/>
+        public object? Invoke(Expression<Func<Delegate>> expression, params object?[] parameters)
+        {
+            return mScope?.Invoke(expression, parameters);
+        }
+
+        /// <inheritdoc/>
         public IScope CreateScope()
         {
             IScope scope = CreateAndSetupScope();

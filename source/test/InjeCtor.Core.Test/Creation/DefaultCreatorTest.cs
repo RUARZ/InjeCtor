@@ -254,6 +254,11 @@ namespace InjeCtor.Core.Test.Creation
                 throw new NotImplementedException();
             }
 
+            public object? Invoke(Expression<Func<Delegate>> expression, params object?[] parameters)
+            {
+                throw new NotImplementedException();
+            }
+
             public void SetSingletons(IReadOnlyDictionary<Type, object> singletons)
             {
                 throw new NotImplementedException();
