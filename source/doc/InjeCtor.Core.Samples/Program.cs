@@ -18,7 +18,8 @@ namespace Samples
         {
             using IInjeCtor injeCtor = new InjeCtor.Core.InjeCtor();
 
-            injeCtor.Mapper.Add<IPlayer>().As<Player>();
+            // add mappings for interfaces to InjeCtor and set their creation instruction
+            injeCtor.Mapper.Add<IPlayer>().As<Player>(); // mapped to always create a new instance on creation
             injeCtor.Mapper.Add<IUserInteraction>().AsSingleton<ConsoleUserInteraction>();
             injeCtor.Mapper.Add<IRequestContext>().AsScopeSingleton<RequestContext>();
 
@@ -55,10 +56,16 @@ namespace Samples
         private static void DynamicMappingResolve()
         {
             DynamicTypeMapper mapper = new DynamicTypeMapper();
-            mapper.Add<IPlayer>();
+            // just add the interfaces we want to use within the mapper / InjeCtor and set their creation instruction
+            mapper.Add<IPlayer>(); // set the creation instruction to always -> each request will create a new instance
             mapper.Add<IUserInteraction>().AsSingleton();
             mapper.Add<IRequestContext>().AsScopeSingleton();
-            mapper.Resolve();
+            // with resolve the current app domain / assembly load context will be searched for a matching
+            // class which implements the passed interfaces
+            // NOTE: the mappings will only be finished if only one matching implementation for the interface is found!
+            // if there are more implementations then the mapping will not be finshed.
+            // the return value indicates if the resolving was successfull => All types where found and could be finished.
+            bool success = mapper.Resolve();
 
             using IInjeCtor injeCtor = new InjeCtor.Core.InjeCtor(mapper);
 

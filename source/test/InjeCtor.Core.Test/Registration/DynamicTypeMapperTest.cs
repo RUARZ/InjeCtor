@@ -75,7 +75,7 @@ namespace InjeCtor.Core.Test.Registration
         }
 
         [Test]
-        public void Add_MappingAdded_ThrownAfterCompletion()
+        public void Add_MappingAdded_RaisedAfterCompletion()
         {
             int eventCounter = 0;
             MappingAddedEventArgs? args = null;
