@@ -1,4 +1,5 @@
-﻿using InjeCtor.Core.Samples.Interfaces;
+﻿using InjeCtor.Core.Attribute;
+using InjeCtor.Core.Samples.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +25,11 @@ namespace InjeCtor.Core.Samples.Implementations
         public bool IsAlive { get; private set; }
 
         public PlayerState State { get; private set; }
+
+        [Inject]
+        public IWeapon Weapon { get; set; }
+
+        public IShield Shield { get; set; }
 
         public void Attack()
         {
