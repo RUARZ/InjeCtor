@@ -105,14 +105,7 @@ namespace InjeCtor.Core
         public ITypeMapper Mapper { get; }
 
         /// <inheritdoc/>
-        public ITypeMappingProvider? MappingProvider
-        {
-            get => mMappingProvider;
-            set
-            {
-                throw new InvalidOperationException($"Setting of '{nameof(MappingProvider)}' is not allowed since it can only be set through constructor for '{typeof(InjeCtor).FullName}'!");
-            }
-        }
+        public ITypeMappingProvider? MappingProvider { get => mMappingProvider; }
 
         /// <inheritdoc/>
         public ITypeInformationProvider TypeInformationProvider { get; }
@@ -121,15 +114,15 @@ namespace InjeCtor.Core
         public ITypeInformationBuilder? TypeInformationBuilder { get; }
 
         /// <inheritdoc/>
-        public object Create(Type type)
+        public object? Get(Type type)
         {
-            return mScope.Create(type);
+            return mScope?.Get(type);
         }
 
         /// <inheritdoc/>
-        public T Create<T>()
+        public T Get<T>()
         {
-            return (T)Create(typeof(T));
+            return (T)Get(typeof(T));
         }
 
         /// <inheritdoc/>

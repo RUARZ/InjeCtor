@@ -46,13 +46,13 @@ namespace InjeCtor.Core.Test.Scope
         [Test]
         public void Create_MappingIsNull_ThrowsInvalidOperationException()
         {
-            Assert.Throws<InvalidOperationException>(() => mScope.Create<UnknownClass>());
+            Assert.Throws<InvalidOperationException>(() => mScope.Get<UnknownClass>());
         }
 
         [Test]
         public void Create_MappedTypeIsNull_ThrowsInvalidOperationException()
         {
-            Assert.Throws<InvalidOperationException>(() => mScope.Create<ClassWithoutMappedType>());
+            Assert.Throws<InvalidOperationException>(() => mScope.Get<ClassWithoutMappedType>());
         }
 
         [Test]
@@ -60,15 +60,15 @@ namespace InjeCtor.Core.Test.Scope
         {
             mScope.Creator = null;
 
-            Assert.Throws<InvalidOperationException>(() => mScope.Create<ICalculator>());
+            Assert.Throws<InvalidOperationException>(() => mScope.Get<ICalculator>());
         }
 
         [TestCase(typeof(ICalculator), typeof(Calculator))]
         [TestCase(typeof(IGreeter), typeof(Greeter))]
         public void Create_MultipleTimesWithAlwaysCreationInstruction_SuccessWithNewInstances(Type requestType, Type resultType)
         {
-            var createdObject = mScope.Create(requestType);
-            var secondObject = mScope.Create(requestType);
+            var createdObject = mScope.Get(requestType);
+            var secondObject = mScope.Get(requestType);
 
             Assert.That(createdObject, Is.Not.Null);
             Assert.That(createdObject, Is.InstanceOf(resultType));
@@ -92,7 +92,7 @@ namespace InjeCtor.Core.Test.Scope
                 }
             });
 
-            var createdObject = mScope.Create<ICalculator>();
+            var createdObject = mScope.Get<ICalculator>();
 
             Assert.That(createdObject, Is.Not.Null);
             Assert.That(createdObject, Is.InstanceOf<Calculator>());
@@ -108,8 +108,8 @@ namespace InjeCtor.Core.Test.Scope
         public void Create_MultipleTimesWithScopeCreationInstruction_SuccessWithNewInstances(Type requestType, Type resultType)
         {
             mTypeMapper.SetCreationInstruction(CreationInstruction.Scope);
-            var createdObject = mScope.Create(requestType);
-            var secondObject = mScope.Create(requestType);
+            var createdObject = mScope.Get(requestType);
+            var secondObject = mScope.Get(requestType);
 
             Assert.That(createdObject, Is.Not.Null);
             Assert.That(createdObject, Is.InstanceOf(resultType));
@@ -139,8 +139,8 @@ namespace InjeCtor.Core.Test.Scope
                 singletonInstance[args.Type] = args.Instance;
             };
 
-            var createdObject = mScope.Create(requestType);
-            var secondObject = mScope.Create(requestType);
+            var createdObject = mScope.Get(requestType);
+            var secondObject = mScope.Get(requestType);
 
             Assert.That(createdObject, Is.Not.Null);
             Assert.That(createdObject, Is.InstanceOf(resultType));
@@ -160,7 +160,7 @@ namespace InjeCtor.Core.Test.Scope
         public void GetSingleton_WithCreatedScopeSingleton_ReturnsInstance()
         {
             mTypeMapper.SetCreationInstruction(CreationInstruction.Scope);
-            object instance = mScope.Create<BaseClassForSingleton>();
+            object instance = mScope.Get<BaseClassForSingleton>();
 
             Assert.That(mScope.GetSingleton<BaseClassForSingleton>(), Is.SameAs(instance));
         }
@@ -181,7 +181,7 @@ namespace InjeCtor.Core.Test.Scope
                 singletonInstance[args.Type] = args.Instance;
             };
 
-            object instance = mScope.Create<BaseClassForSingleton>();
+            object instance = mScope.Get<BaseClassForSingleton>();
 
             Assert.That(mScope.GetSingleton<BaseClassForSingleton>(), Is.SameAs(instance));
             Assert.That(creationCounter, Is.EqualTo(1));
@@ -194,7 +194,7 @@ namespace InjeCtor.Core.Test.Scope
             mScope.Disposing += (sender, args) => dispingEventCounter++;
 
             mTypeMapper.SetCreationInstruction(CreationInstruction.Scope);
-            var singletonInstance = mScope.Create<BaseClassForSingleton>(); // need to create a scope singleton to test if it gets disposed
+            var singletonInstance = mScope.Get<BaseClassForSingleton>(); // need to create a scope singleton to test if it gets disposed
 
             Assert.That(singletonInstance, Is.Not.Null);
             Assert.That(singletonInstance.IsDisposed, Is.False);
@@ -209,7 +209,7 @@ namespace InjeCtor.Core.Test.Scope
         [Test]
         public void Create_NotAddedTypeMappingClass_InstanceCreatedWithPassedParameters()
         {
-            var createdObject = mScope.Create<NotMappedClass>();
+            var createdObject = mScope.Get<NotMappedClass>();
 
             Assert.That(createdObject, Is.Not.Null);
             Assert.That(createdObject.Calculator, Is.Not.Null);

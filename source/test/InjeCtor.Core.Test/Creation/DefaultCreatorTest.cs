@@ -216,17 +216,17 @@ namespace InjeCtor.Core.Test.Creation
                 throw new NotImplementedException();
             }
 
-            public T Create<T>(IScope? scope)
+            public T Get<T>(IScope? scope)
             {
                 throw new NotImplementedException();
             }
 
-            public object Create(Type type)
+            public object Get(Type type)
             {
                 throw new NotImplementedException();
             }
 
-            public T Create<T>()
+            public T Get<T>()
             {
                 throw new NotImplementedException();
             }

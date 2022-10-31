@@ -62,7 +62,7 @@ namespace InjeCtor.Core.Invoke
             {
                 if (Scope?.MappingProvider?.GetTypeMapping(methodParameters[i].ParameterType) != null)
                 {
-                    parametersForMethod[i] = Scope.Create(methodParameters[i].ParameterType);
+                    parametersForMethod[i] = Scope.Get(methodParameters[i].ParameterType);
                 }
                 else
                 {
@@ -70,7 +70,7 @@ namespace InjeCtor.Core.Invoke
 
                     if (para is null && !ReflectionHelper.IsReferenceTypeNullable(methodParameters[i], method))
                     {
-                        para = Scope?.Create(methodParameters[i].ParameterType);
+                        para = Scope?.Get(methodParameters[i].ParameterType);
                     }
                     
                     parametersForMethod[i] = para;

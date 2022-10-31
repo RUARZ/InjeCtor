@@ -301,7 +301,7 @@ namespace InjeCtor.Core.Test.TestClasses
         public ITypeMappingProvider? MappingProvider { get; set; }
         public IInvoker? Invoker { get; set; }
 
-        public object Create(Type type)
+        public object Get(Type type)
         {
             var mapping = MappingProvider.GetTypeMapping(type);
             if (mapping is null)
@@ -324,9 +324,9 @@ namespace InjeCtor.Core.Test.TestClasses
             return instance;
         }
 
-        public T Create<T>()
+        public T Get<T>()
         {
-            return (T)Create(typeof(T));
+            return (T)Get(typeof(T));
         }
 
         public void Dispose()

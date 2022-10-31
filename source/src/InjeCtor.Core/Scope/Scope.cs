@@ -90,7 +90,7 @@ namespace InjeCtor.Core.Scope
         }
 
         /// <inheritdoc/>
-        public object Create(Type type)
+        public object Get(Type type)
         {
             ITypeMapping? mapping = MappingProvider?.GetTypeMapping(type);
 
@@ -140,9 +140,9 @@ namespace InjeCtor.Core.Scope
         }
 
         /// <inheritdoc/>
-        public T Create<T>()
+        public T Get<T>()
         {
-            return (T)Create(typeof(T));
+            return (T)Get(typeof(T));
         }
 
         /// <inheritdoc/>

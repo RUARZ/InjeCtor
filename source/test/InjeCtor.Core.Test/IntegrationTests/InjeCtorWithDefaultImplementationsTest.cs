@@ -46,8 +46,8 @@ namespace InjeCtor.Core.Test.IntegrationTests
         [Test]
         public void Create_MultipleTimesWithAlwaysCreationInstruction_SuccessWithNewInstances()
         {
-            var firstObject = mInjeCtor.Create<IGreeter>();
-            var secondObject = mInjeCtor.Create<IGreeter>();
+            var firstObject = mInjeCtor.Get<IGreeter>();
+            var secondObject = mInjeCtor.Get<IGreeter>();
 
             Assert.That(firstObject, Is.Not.Null);
             Assert.That(firstObject, Is.InstanceOf<Greeter>());
@@ -59,8 +59,8 @@ namespace InjeCtor.Core.Test.IntegrationTests
         [Test]
         public void Create_MultipleTimesWithScopeCreationInstruction_SuccessWithNewInstances()
         {
-            var firstObject = mInjeCtor.Create<ICalculator>();
-            var secondObject = mInjeCtor.Create<ICalculator>();
+            var firstObject = mInjeCtor.Get<ICalculator>();
+            var secondObject = mInjeCtor.Get<ICalculator>();
 
             Assert.That(firstObject, Is.Not.Null);
             Assert.That(firstObject, Is.InstanceOf<Calculator>());
@@ -72,8 +72,8 @@ namespace InjeCtor.Core.Test.IntegrationTests
         [Test]
         public void Create_MultipleTimesWithCreationInstruction_SuccessWithNewInstances()
         {
-            var firstObject = mInjeCtor.Create<BaseClassForSingleton>();
-            var secondObject = mInjeCtor.Create<BaseClassForSingleton>();
+            var firstObject = mInjeCtor.Get<BaseClassForSingleton>();
+            var secondObject = mInjeCtor.Get<BaseClassForSingleton>();
 
             Assert.That(firstObject, Is.Not.Null);
             Assert.That(firstObject, Is.InstanceOf<SingletonClass>());
@@ -95,8 +95,8 @@ namespace InjeCtor.Core.Test.IntegrationTests
             int[] myIntArray = new int[] { 1, 2, 3, 4, 5 };
             mInjeCtor.Mapper.Add<IEnumerable<int>>().AsSingleton(myIntArray);
 
-            var firstObject = mInjeCtor.Create<IEnumerable<int>>();
-            var secondObject = mInjeCtor.Create<IEnumerable<int>>();
+            var firstObject = mInjeCtor.Get<IEnumerable<int>>();
+            var secondObject = mInjeCtor.Get<IEnumerable<int>>();
 
             Assert.That(firstObject, Is.Not.Null);
             Assert.That(firstObject, Is.InstanceOf<IEnumerable<int>>());
@@ -116,16 +116,16 @@ namespace InjeCtor.Core.Test.IntegrationTests
 
             using (IScope scope = mInjeCtor.CreateScope())
             {
-                var firstObjectDefaultScope = mInjeCtor.Create<ICalculator>();
-                var secondObjectDefaultScope = mInjeCtor.Create<ICalculator>();
+                var firstObjectDefaultScope = mInjeCtor.Get<ICalculator>();
+                var secondObjectDefaultScope = mInjeCtor.Get<ICalculator>();
 
-                var firstObjectScope = scope.Create<ICalculator>();
-                var secondObjectScope = scope.Create<ICalculator>();
+                var firstObjectScope = scope.Get<ICalculator>();
+                var secondObjectScope = scope.Get<ICalculator>();
 
                 using (IScope scope2 = mInjeCtor.CreateScope())
                 {
-                    var firstObjectScope2 = scope2.Create<ICalculator>();
-                    var secondObjectScope2 = scope2.Create<ICalculator>();
+                    var firstObjectScope2 = scope2.Get<ICalculator>();
+                    var secondObjectScope2 = scope2.Get<ICalculator>();
 
                     // assert default scope objects
                     AssertInstanceOfCalculator(firstObjectDefaultScope);
@@ -154,7 +154,7 @@ namespace InjeCtor.Core.Test.IntegrationTests
                     Assert.That(mInjeCtor.GetScopes().Count(), Is.EqualTo(2));
                 }
 
-                var thirdObjectScope = scope.Create<ICalculator>();
+                var thirdObjectScope = scope.Get<ICalculator>();
 
                 // assert scope objects
                 AssertInstanceOfCalculator(thirdObjectScope);
@@ -174,17 +174,17 @@ namespace InjeCtor.Core.Test.IntegrationTests
         [Test]
         public void Create_SingletonsFromMultipleScopesAndOnlyDisposeInjeCtor_OnlyOneInstanceCreatedAndAllScopesDisposed()
         {
-            var firstObject = mInjeCtor.Create<BaseClassForSingleton>();
-            var secondObject = mInjeCtor.Create<BaseClassForSingleton>();
+            var firstObject = mInjeCtor.Get<BaseClassForSingleton>();
+            var secondObject = mInjeCtor.Get<BaseClassForSingleton>();
 
             IScope scope1 = mInjeCtor.CreateScope();
             IScope scope2 = mInjeCtor.CreateScope();
 
-            var firstObjectScope1 = scope1.Create<BaseClassForSingleton>();
-            var secondObjectScope1 = scope1.Create<BaseClassForSingleton>();
+            var firstObjectScope1 = scope1.Get<BaseClassForSingleton>();
+            var secondObjectScope1 = scope1.Get<BaseClassForSingleton>();
 
-            var firstObjectScope2 = scope2.Create<BaseClassForSingleton>();
-            var secondObjectScope2 = scope2.Create<BaseClassForSingleton>();
+            var firstObjectScope2 = scope2.Get<BaseClassForSingleton>();
+            var secondObjectScope2 = scope2.Get<BaseClassForSingleton>();
 
             Assert.That(firstObject, Is.Not.Null);
             Assert.That(firstObject, Is.InstanceOf<SingletonClass>());
@@ -245,7 +245,7 @@ namespace InjeCtor.Core.Test.IntegrationTests
             if (addTypeInformationForNonAttributeProperty)
                 mInjeCtor.TypeInformationBuilder.AddPropertyInjection((DummyClassWithInjectAttributes c) => c.Greeter);
 
-            var createdObject = mInjeCtor.Create<IDummyInterface>();
+            var createdObject = mInjeCtor.Get<IDummyInterface>();
 
             var instance = AssertAndGetCastedType<DummyClassWithInjectAttributes>(createdObject);
 
@@ -265,7 +265,7 @@ namespace InjeCtor.Core.Test.IntegrationTests
         [Test]
         public void Create_NotAddedTypeMappingClass_InstanceCreatedWithPassedParameters()
         {
-            var createdObject = mInjeCtor.Create<NotMappedClass>();
+            var createdObject = mInjeCtor.Get<NotMappedClass>();
 
             Assert.That(createdObject, Is.Not.Null);
             Assert.That(createdObject.Calculator, Is.Not.Null);
@@ -277,8 +277,8 @@ namespace InjeCtor.Core.Test.IntegrationTests
         [Test]
         public void Create_NotMappedInterfaceAndAbstractClass_InvalidOperationException()
         {
-            Assert.Throws<InvalidOperationException>(() => mInjeCtor.Create<INotMappedInterface>());
-            Assert.Throws<InvalidOperationException>(() => mInjeCtor.Create<NotMappedAbstractClass>());
+            Assert.Throws<InvalidOperationException>(() => mInjeCtor.Get<INotMappedInterface>());
+            Assert.Throws<InvalidOperationException>(() => mInjeCtor.Get<NotMappedAbstractClass>());
         }
 
         [TestCase(false, false)]
@@ -293,7 +293,7 @@ namespace InjeCtor.Core.Test.IntegrationTests
             if (setPropertyInjectionWithExpression)
                 mInjeCtor.TypeInformationBuilder.AddPropertyInjection((NotMappedClassWithInjections c) => c.Greeter);
 
-            var createdInstance = mInjeCtor.Create<NotMappedClassWithInjections>();
+            var createdInstance = mInjeCtor.Get<NotMappedClassWithInjections>();
 
             Assert.That(createdInstance, Is.Not.Null);
             Assert.That(createdInstance, Is.TypeOf<NotMappedClassWithInjections>());
@@ -322,11 +322,11 @@ namespace InjeCtor.Core.Test.IntegrationTests
         [Test]
         public void Create_NotMappedClassWithOtherNotMappedClassAsCtorParameter_InstanceCreated()
         {
-            var createdObject = mInjeCtor.Create<NotMappedClassWithAnotherNotMappedClassForCtor>();
+            var createdObject = mInjeCtor.Get<NotMappedClassWithAnotherNotMappedClassForCtor>();
 
             using IScope scope = mInjeCtor.CreateScope();
 
-            var scopeObject = scope.Create<NotMappedClassWithAnotherNotMappedClassForCtor>();
+            var scopeObject = scope.Get<NotMappedClassWithAnotherNotMappedClassForCtor>();
 
             void AssertInstance(NotMappedClassWithAnotherNotMappedClassForCtor instance)
             {
@@ -360,12 +360,12 @@ namespace InjeCtor.Core.Test.IntegrationTests
                     break;
             }
 
-            var createdInstance = mInjeCtor.Create<NotMappedClassWithInjections>();
-            var secondInstance = mInjeCtor.Create<NotMappedClassWithInjections>();
+            var createdInstance = mInjeCtor.Get<NotMappedClassWithInjections>();
+            var secondInstance = mInjeCtor.Get<NotMappedClassWithInjections>();
 
             using IScope scope = mInjeCtor.CreateScope();
 
-            var otherScopeInstance = scope.Create<NotMappedClassWithInjections>();
+            var otherScopeInstance = scope.Get<NotMappedClassWithInjections>();
 
             void AssertInstance(NotMappedClassWithInjections instance)
             {
@@ -405,12 +405,12 @@ namespace InjeCtor.Core.Test.IntegrationTests
             NotMappedClassWithInjections instanceToUse = new NotMappedClassWithInjections();
             mInjeCtor.Mapper.AddSingleton(instanceToUse);
 
-            var createdInstance = mInjeCtor.Create<NotMappedClassWithInjections>();
-            var secondInstance = mInjeCtor.Create<NotMappedClassWithInjections>();
+            var createdInstance = mInjeCtor.Get<NotMappedClassWithInjections>();
+            var secondInstance = mInjeCtor.Get<NotMappedClassWithInjections>();
 
             using IScope scope = mInjeCtor.CreateScope();
 
-            var otherScopeInstance = scope.Create<NotMappedClassWithInjections>();
+            var otherScopeInstance = scope.Get<NotMappedClassWithInjections>();
 
             void AssertInstance(NotMappedClassWithInjections instance)
             {
@@ -438,7 +438,7 @@ namespace InjeCtor.Core.Test.IntegrationTests
             mInjeCtor.Mapper.Add<ICircularReferenceInterfaceA>().As<SimpleCircularReferenceClassA>();
             mInjeCtor.Mapper.Add<ICircularReferenceInterfaceB>().As<SimpleCircularReferenceClassB>();
 
-            Assert.Throws<CircularReferenceException>(() => mInjeCtor.Create<ICircularReferenceInterfaceA>());
+            Assert.Throws<CircularReferenceException>(() => mInjeCtor.Get<ICircularReferenceInterfaceA>());
         }
 
         [Test]
@@ -449,7 +449,7 @@ namespace InjeCtor.Core.Test.IntegrationTests
             mInjeCtor.Mapper.Add<ICircularReferenceInterfaceC>().As<CircularReferenceClassC>();
             mInjeCtor.Mapper.Add<ICircularReferenceInterfaceD>().As<CircularReferenceClassD>();
 
-            Assert.Throws<CircularReferenceException>(() => mInjeCtor.Create<ICircularReferenceInterfaceA>());
+            Assert.Throws<CircularReferenceException>(() => mInjeCtor.Get<ICircularReferenceInterfaceA>());
         }
 
         [Test]
@@ -459,7 +459,7 @@ namespace InjeCtor.Core.Test.IntegrationTests
             mInjeCtor.Mapper.Add<ICircularReferenceInterfaceB>().As<CircularReferenceClassB>();
             mInjeCtor.Mapper.Add<ICircularReferenceInterfaceC>().As<CircularReferenceClassC>();
 
-            var createdObject = mInjeCtor.Create<ICircularReferenceInterfaceA>();
+            var createdObject = mInjeCtor.Get<ICircularReferenceInterfaceA>();
 
             Assert.That(createdObject, Is.Not.Null);
             Assert.That(createdObject, Is.InstanceOf<CircularReferenceClassA>());
@@ -554,8 +554,8 @@ namespace InjeCtor.Core.Test.IntegrationTests
         {
             using IScope scope = mInjeCtor.CreateScope();
 
-            var instance1 = mInjeCtor.Create<ScopeAndInjeCtorInjectionsCtor>();
-            var instance2 = scope.Create<ScopeAndInjeCtorInjectionsCtor>();
+            var instance1 = mInjeCtor.Get<ScopeAndInjeCtorInjectionsCtor>();
+            var instance2 = scope.Get<ScopeAndInjeCtorInjectionsCtor>();
 
             Assert.That(instance1, Is.Not.SameAs(instance2));
 
@@ -578,8 +578,8 @@ namespace InjeCtor.Core.Test.IntegrationTests
 
             using IScope scope = mInjeCtor.CreateScope();
 
-            var createdInstance1 = mInjeCtor.Create<IDummyInterface>();
-            var createdInstance2 = scope.Create<IDummyInterface>();
+            var createdInstance1 = mInjeCtor.Get<IDummyInterface>();
+            var createdInstance2 = scope.Get<IDummyInterface>();
 
             var instance1 = AssertAndGetCastedType<ScopeAndInjeCtorInjectionsProperties>(createdInstance1);
             var instance2 = AssertAndGetCastedType<ScopeAndInjeCtorInjectionsProperties>(createdInstance2);

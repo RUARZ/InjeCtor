@@ -23,7 +23,7 @@ namespace Samples
             injeCtor.Mapper.Add<IUserInteraction>().AsSingleton<ConsoleUserInteraction>();
             injeCtor.Mapper.Add<IRequestContext>().AsScopeSingleton<RequestContext>();
 
-            IUserInteraction userInteraction = injeCtor.Create<IUserInteraction>();
+            IUserInteraction userInteraction = injeCtor.Get<IUserInteraction>();
 
             userInteraction.Inform("Hello World");
 
@@ -35,7 +35,7 @@ namespace Samples
             int value = userInteraction.GetInput<int>("Enter a number:");
             userInteraction.Inform($"Input number: {value}");
 
-            IPlayer player = injeCtor.Create<IPlayer>();
+            IPlayer player = injeCtor.Get<IPlayer>();
 
             player.StartRunning();
             player.Hide();
@@ -48,7 +48,7 @@ namespace Samples
             GetParametersForContext(injeCtor);
             SetResultForContext(injeCtor);
 
-            IRequestContext context = injeCtor.Create<IRequestContext>();
+            IRequestContext context = injeCtor.Get<IRequestContext>();
             userInteraction.Inform($"Parameters: {string.Join(", ", context.Parameters)}");
             userInteraction.Inform($"Results: {string.Join(", ", context.ResultValues)}");
         }
@@ -69,7 +69,7 @@ namespace Samples
 
             using IInjeCtor injeCtor = new InjeCtor.Core.InjeCtor(mapper);
 
-            IUserInteraction userInteraction = injeCtor.Create<IUserInteraction>();
+            IUserInteraction userInteraction = injeCtor.Get<IUserInteraction>();
 
             userInteraction.Inform("Hello World");
 
@@ -81,8 +81,8 @@ namespace Samples
             int value = userInteraction.GetInput<int>("Enter a number:");
             userInteraction.Inform($"Input number: {value}");
 
-            IPlayer player1 = injeCtor.Create<IPlayer>();
-            IPlayer player2 = injeCtor.Create<IPlayer>();
+            IPlayer player1 = injeCtor.Get<IPlayer>();
+            IPlayer player2 = injeCtor.Get<IPlayer>();
 
             userInteraction.Inform($"Player1 and Player2 reference equals: {ReferenceEquals(player1, player2)}");
 
@@ -97,21 +97,21 @@ namespace Samples
             GetParametersForContext(injeCtor);
             SetResultForContext(injeCtor);
 
-            IRequestContext context = injeCtor.Create<IRequestContext>();
+            IRequestContext context = injeCtor.Get<IRequestContext>();
             userInteraction.Inform($"Parameters: {string.Join(", ", context.Parameters)}");
             userInteraction.Inform($"Results: {string.Join(", ", context.ResultValues)}");
         }
 
         private static void GetParametersForContext(IInjeCtor injector)
         {
-            IRequestContext context = injector.Create<IRequestContext>();
+            IRequestContext context = injector.Get<IRequestContext>();
 
             context.Parameters = new object[] { "one", 2, 3, "four", 5.67 };
         }
 
         private static void SetResultForContext(IInjeCtor injector)
         {
-            IRequestContext context = injector.Create<IRequestContext>();
+            IRequestContext context = injector.Get<IRequestContext>();
 
             context.ResultValues = new object[] { "SUCCESS" };
         }

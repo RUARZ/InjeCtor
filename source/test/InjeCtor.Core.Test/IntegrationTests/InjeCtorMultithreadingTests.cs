@@ -55,7 +55,7 @@ namespace InjeCtor.Core.Test.IntegrationTests
                 tasks[i] = new Task((state) =>
                 {
                     int index = (int)state;
-                    singletons[index] = mInjeCtor.Create<BaseClassForSingleton>();
+                    singletons[index] = mInjeCtor.Get<BaseClassForSingleton>();
                 }, i);
             }
 
@@ -87,7 +87,7 @@ namespace InjeCtor.Core.Test.IntegrationTests
                 tasks[i] = new Task((state) =>
                 {
                     int index = (int)state;
-                    scopeSingletons[index] = scope.Create<ScopeCreationCounter>();
+                    scopeSingletons[index] = scope.Get<ScopeCreationCounter>();
                 }, i);
             }
 

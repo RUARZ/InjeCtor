@@ -1,5 +1,6 @@
 ﻿using InjeCtor.Core.Creation;
 using InjeCtor.Core.Invoke;
+using InjeCtor.Core.Registration;
 using InjeCtor.Core.TypeInformation;
 using System;
 using System.Collections.Generic;
@@ -10,13 +11,18 @@ namespace InjeCtor.Core.Scope
     /// <summary>
     /// Interface for different scopes for creating / getting instances.
     /// </summary>
-    public interface IScope : ICreator, IInvoker, ISingletonCreationRequester, IDisposable
+    public interface IScope : IInstanceGetter, IInvoker, ISingletonCreationRequester, IDisposable
     {
         /// <summary>
         /// Instance of <see cref="ITypeInformationProvider"/> to get informations for types for further
         /// injections.
         /// </summary>
         ITypeInformationProvider? TypeInformationProvider { get; set; }
+
+        /// <summary>
+        /// Implementation of <see cref="ITypeMappingProvider"/> to resolve the types.
+        /// </summary>
+        ITypeMappingProvider? MappingProvider { get; set; }
 
         /// <summary>
         /// Instace which implements <see cref="IScopeAwareCreator"/> which can be used for creation of instances.

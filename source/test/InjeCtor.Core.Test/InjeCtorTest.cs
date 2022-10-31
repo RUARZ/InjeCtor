@@ -47,8 +47,8 @@ namespace InjeCtor.Core.Test
         [TestCase(typeof(IGreeter), typeof(Greeter))]
         public void Create_MultipleTimesWithAlwaysCreationInstruction_SuccessWithNewInstances(Type requestType, Type resultType)
         {
-            var createdObject = mInjeCtor.Create(requestType);
-            var secondObject = mInjeCtor.Create(requestType);
+            var createdObject = mInjeCtor.Get(requestType);
+            var secondObject = mInjeCtor.Get(requestType);
 
             Assert.That(createdObject, Is.Not.Null);
             Assert.That(createdObject, Is.InstanceOf(resultType));
@@ -63,8 +63,8 @@ namespace InjeCtor.Core.Test
         public void Create_MultipleTimesWithSingletonCreationInstruction_SuccessWithSameInstances(Type requestType, Type resultType)
         {
             mTypeMapper.SetCreationInstruction(CreationInstruction.Singleton);
-            var createdObject = mInjeCtor.Create(requestType);
-            var secondObject = mInjeCtor.Create(requestType);
+            var createdObject = mInjeCtor.Get(requestType);
+            var secondObject = mInjeCtor.Get(requestType);
 
             Assert.That(createdObject, Is.Not.Null);
             Assert.That(createdObject, Is.InstanceOf(resultType));
@@ -78,15 +78,15 @@ namespace InjeCtor.Core.Test
         [Test]
         public void Create_MultipleTimesSingleton_OnlyOneTimeCreated()
         {
-            var createdObject = mInjeCtor.Create<BaseClassForSingleton>();
+            var createdObject = mInjeCtor.Get<BaseClassForSingleton>();
 
             Assert.That(createdObject, Is.Not.Null);
             Assert.That(createdObject, Is.InstanceOf<BaseClassForSingleton>());
             Assert.That(createdObject, Is.InstanceOf<SingletonClass>());
-            Assert.That(createdObject, Is.SameAs(mInjeCtor.Create<BaseClassForSingleton>()));
-            Assert.That(createdObject, Is.SameAs(mInjeCtor.Create<BaseClassForSingleton>()));
-            Assert.That(createdObject, Is.SameAs(mInjeCtor.Create<BaseClassForSingleton>()));
-            Assert.That(createdObject, Is.SameAs(mInjeCtor.Create<BaseClassForSingleton>()));
+            Assert.That(createdObject, Is.SameAs(mInjeCtor.Get<BaseClassForSingleton>()));
+            Assert.That(createdObject, Is.SameAs(mInjeCtor.Get<BaseClassForSingleton>()));
+            Assert.That(createdObject, Is.SameAs(mInjeCtor.Get<BaseClassForSingleton>()));
+            Assert.That(createdObject, Is.SameAs(mInjeCtor.Get<BaseClassForSingleton>()));
             Assert.That(SingletonClass.CreationCounter, Is.EqualTo(1));
             Assert.That(mCreator.CreatedSingletons.Count(x => x.Key != typeof(IInjeCtor)), Is.EqualTo(1));
             Assert.That(mCreator.CreatedSingletons[typeof(BaseClassForSingleton)], Is.InstanceOf(typeof(SingletonClass)));
@@ -98,13 +98,13 @@ namespace InjeCtor.Core.Test
             SingletonClass singleton = new SingletonClass();
             mTypeMapper.SetDirectSingleton(typeof(BaseClassForSingleton), singleton);
 
-            var createdObject = mInjeCtor.Create<BaseClassForSingleton>();
+            var createdObject = mInjeCtor.Get<BaseClassForSingleton>();
 
             Assert.That(createdObject, Is.Not.Null);
             Assert.That(createdObject, Is.InstanceOf<BaseClassForSingleton>());
             Assert.That(createdObject, Is.InstanceOf<SingletonClass>());
-            Assert.That(createdObject, Is.SameAs(mInjeCtor.Create<BaseClassForSingleton>()));
-            Assert.That(singleton, Is.SameAs(mInjeCtor.Create<BaseClassForSingleton>()));
+            Assert.That(createdObject, Is.SameAs(mInjeCtor.Get<BaseClassForSingleton>()));
+            Assert.That(singleton, Is.SameAs(mInjeCtor.Get<BaseClassForSingleton>()));
             Assert.That(createdObject, Is.SameAs(singleton));
             Assert.That(SingletonClass.CreationCounter, Is.EqualTo(1));
             Assert.That(mCreator.CreatedSingletons.Count(x => x.Key != typeof(IInjeCtor)), Is.EqualTo(1));
@@ -114,7 +114,7 @@ namespace InjeCtor.Core.Test
         [Test]
         public void Create_MissingMappedType_ThrowsInvalidOperationException()
         {
-            Assert.Throws<InvalidOperationException>(() => mInjeCtor.Create<ClassWithoutMappedType>());
+            Assert.Throws<InvalidOperationException>(() => mInjeCtor.Get<ClassWithoutMappedType>());
         }
 
         [Test]
@@ -123,12 +123,6 @@ namespace InjeCtor.Core.Test
             Assert.That(mInjeCtor.Mapper, Is.SameAs(mTypeMapper));
             Assert.That(mInjeCtor.MappingProvider, Is.SameAs(mTypeMapper));
             Assert.That(mInjeCtor.MappingProvider, Is.SameAs(mInjeCtor.Mapper));
-        }
-
-        [Test]
-        public void MappingProvider_SetMappingProvider_ThrowsInvalidOperationException()
-        {
-            Assert.Throws<InvalidOperationException>(() => mInjeCtor.MappingProvider = null);
         }
 
         [Test]
@@ -162,8 +156,8 @@ namespace InjeCtor.Core.Test
         [Test]
         public void Dispose_SingletonWithAndWithoutDispose_DisposeCorrect()
         {
-            var disposeSingleton = mInjeCtor.Create<BaseClassForSingleton>();
-            var nonDisposeSingleton = mInjeCtor.Create<BaseClassForNonDisposableSingleton>();
+            var disposeSingleton = mInjeCtor.Get<BaseClassForSingleton>();
+            var nonDisposeSingleton = mInjeCtor.Get<BaseClassForNonDisposableSingleton>();
 
             Assert.That(disposeSingleton, Is.Not.Null);
             Assert.That(nonDisposeSingleton, Is.Not.Null);
@@ -217,7 +211,7 @@ namespace InjeCtor.Core.Test
                 });
             }
 
-            var createdObject = mInjeCtor.Create<ICalculator>();
+            var createdObject = mInjeCtor.Get<ICalculator>();
 
             Assert.That(createdObject, Is.Not.Null);
             Assert.That(createdObject, Is.InstanceOf<Calculator>());
@@ -238,7 +232,7 @@ namespace InjeCtor.Core.Test
         [Test]
         public void Create_NotAddedTypeMappingClass_InstanceCreatedWithPassedParameters()
         {
-            var createdObject = mInjeCtor.Create<NotMappedClass>();
+            var createdObject = mInjeCtor.Get<NotMappedClass>();
 
             Assert.That(createdObject, Is.Not.Null);
             Assert.That(createdObject.Calculator, Is.Not.Null);
