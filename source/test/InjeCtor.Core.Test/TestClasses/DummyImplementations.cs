@@ -1,4 +1,5 @@
-﻿using InjeCtor.Core.Creation;
+﻿using InjeCtor.Core.Builder;
+using InjeCtor.Core.Creation;
 using InjeCtor.Core.Invoke;
 using InjeCtor.Core.Registration;
 using InjeCtor.Core.Scope;
@@ -357,6 +358,29 @@ namespace InjeCtor.Core.Test.TestClasses
         public object? Invoke(Expression<Func<Delegate>> expression, params object?[] parameters)
         {
             return null;
+        }
+    }
+
+    class DummyInjeCtorBuilder : IInjeCtorBuilder
+    {
+        private readonly object mLockObject = new object();
+
+        public int BuildCount { get; set; }
+
+        public IInjeCtor Build()
+        {
+            lock (mLockObject)
+            {
+                BuildCount++;
+            }
+
+            InjeCtor injeCtor = new InjeCtor();
+
+            injeCtor.Mapper.Add<IGreeter>().As<Greeter>();
+            injeCtor.Mapper.Add<ICalculator>().AsScopeSingleton<Calculator>();
+            injeCtor.Mapper.Add<BaseClassForSingleton>().AsSingleton<SingletonClass>();
+
+            return injeCtor;
         }
     }
 }
