@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="XmlConfigurationSchema"
+    targetNamespace="http://InjeCtor/Configuration/XmlConfigurationSchema.xsd"
+    elementFormDefault="qualified"
+    xmlns="http://InjeCtor/Configuration/XmlConfigurationSchema.xsd"
+    xmlns:mstns="http://InjeCtor/Configuration/XmlConfigurationSchema.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+	<xs:element name="Config" type="ConfigType" />
+
+	<xs:complexType name="ConfigType">
+		<xs:sequence>
+			<xs:element name="InjeCtor" type="InjeCtorType" minOccurs="0" maxOccurs="1" />
+			<xs:element name="Mappings" type="MappingsType" minOccurs="1" maxOccurs="1" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="InjeCtorType">
+		<xs:sequence>
+			<xs:element name="TypeMapper" type="xs:string" minOccurs="0" maxOccurs="1" />
+			<xs:element name="TypeInformationProvider" type="xs:string" minOccurs="0" maxOccurs="1" />
+			<xs:element name="Creator" type="xs:string" minOccurs="0" maxOccurs="1" />
+		</xs:sequence>
+		<xs:attribute name="UseDynamicTypeMapper" type="xs:boolean" use="optional"/>
+	</xs:complexType>
+
+	<xs:complexType name="MappingsType">
+		<xs:sequence>
+			<xs:element name="Always" type="CreateInstructionMappingType" minOccurs="0"/>
+			<xs:element name="ScopeSingleton" type="CreateInstructionMappingType" minOccurs="0"/>
+			<xs:element name="Singleton" type="CreateInstructionMappingType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="CreateInstructionMappingType">
+		<xs:sequence>
+			<xs:element name="Mapping" type="MappingsType" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="MappingType">
+		<xs:attribute name="SourceType" type="xs:string" use="required" />
+		<xs:attribute name="MappingType" type="xs:string" use="optional" />
+		<xs:attribute name="DirectType" type="xs:boolean" use="optional" />
+	</xs:complexType>
+</xs:schema>
