@@ -1,9 +1,9 @@
 ﻿using System;
 using InjeCtor.Core;
-using InjeCtor.Core.Registration;
 using InjeCtor.Core.Samples.Implementations;
 using InjeCtor.Core.Samples.Interfaces;
 using InjeCtor.Core.Scope;
+using InjeCtor.Core.TypeMapping;
 
 namespace Samples
 {
