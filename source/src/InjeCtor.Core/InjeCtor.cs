@@ -1,8 +1,8 @@
 ﻿using InjeCtor.Core.Creation;
 using InjeCtor.Core.Invoke;
-using InjeCtor.Core.Registration;
 using InjeCtor.Core.Scope;
 using InjeCtor.Core.TypeInformation;
+using InjeCtor.Core.TypeMapping;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -235,7 +235,7 @@ namespace InjeCtor.Core
             if (mapping != null && mapping.MappedType != null)
                 return;
 
-            ITypeMapping<TInterface> newMapping = Mapper.Add<TInterface>();
+            ITypeMappingBuilder<TInterface> newMapping = Mapper.Add<TInterface>();
 
             if (globalSingleton)
                 newMapping.AsSingleton<TDefaultImplementation>();

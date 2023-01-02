@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 
-namespace InjeCtor.Core.Registration
+namespace InjeCtor.Core.TypeMapping
 {
     /// <summary>
     /// Interface of a type mapper to add mappings for types to use.
@@ -15,14 +15,28 @@ namespace InjeCtor.Core.Registration
         /// </summary>
         /// <typeparam name="T">The type which should be mapped.</typeparam>
         /// <returns>A <see cref="ITypeMapping{TDef}"/> instance for further configuration.</returns>
-        ITypeMapping<T> Add<T>();
+        ITypeMappingBuilder<T> Add<T>();
+
+        /// <summary>
+        /// Add's a new mapping for <paramref name="type"/>.
+        /// </summary>
+        /// <param name="type">The <see cref="Type"/> to add a mapping.</param>
+        /// <returns>A <see cref="ITypeMapping"/> instance for further configuration.</returns>
+        ITypeMappingBuilder Add(Type type);
 
         /// <summary>
         /// Adds a new mapping for <typeparamref name="T"/> which is directly the type to use / create.
-        /// Will be added with createion instruction <see cref="CreationInstruction.Always"/>.
+        /// Will be added with creation instruction <see cref="CreationInstruction.Always"/>.
         /// </summary>
         /// <typeparam name="T">The type to add as mapping and directly use to create.</typeparam>
         void AddTransient<T>() where T : class;
+
+        /// <summary>
+        /// Adds a new mapping for <paramref name="type"/> which is directly the type to use / create.
+        /// Will be added with creation instruction <see cref="CreationInstruction.Always"/>.
+        /// </summary>
+        /// <param name="type">The type to add as mapping and directly use to create.</param>
+        void AddTransient(Type type);
 
         /// <summary>
         /// Adds a new mapping for <typeparamref name="T"/> which is directly the type to use / create.
@@ -32,11 +46,25 @@ namespace InjeCtor.Core.Registration
         void AddScopeSingleton<T>() where T : class;
 
         /// <summary>
+        /// Adds a new mapping for <paramref name="type"/> which is directly the type to use / create.
+        /// Will be added with creation instruction <see cref="CreationInstruction.ScopeSingleton"/>.
+        /// </summary>
+        /// <param name="type">The type to add as mapping and directly use to create.</param>
+        void AddScopeSingleton(Type type);
+
+        /// <summary>
         /// Adds a new mapping for <typeparamref name="T"/> which is directly the type to use / create.
         /// Will be added with createion instruction <see cref="CreationInstruction.Singleton"/>.
         /// </summary>
         /// <typeparam name="T">The type to add as mapping and directly use to create.</typeparam>
         void AddSingleton<T>() where T : class;
+
+        /// <summary>
+        /// Adds a new mapping for <paramref name="type"/> which is directly the type to use / create.
+        /// Will be added with creation instruction <see cref="CreationInstruction.Singleton"/>.
+        /// </summary>
+        /// <param name="type">The type to add as mapping and directly use to create.</param>
+        void AddSingleton(Type type);
 
         /// <summary>
         /// Adds a new mapping for <typeparamref name="T"/> which is directly the type to use / create.
@@ -57,7 +85,14 @@ namespace InjeCtor.Core.Registration
         /// </summary>
         /// <typeparam name="T">The type which should be mapped.</typeparam>
         /// <returns>A <see cref="IDynamicTypeMapping{TDef}"/> instance for further configuration.</returns>
-        new IDynamicTypeMapping<T> Add<T>();
+        new IDynamicTypeMappingBuilder<T> Add<T>();
+
+        /// <summary>
+        /// Add's a new mapping for <paramref name="type"/>.
+        /// </summary>
+        /// <param name="type">The <see cref="Type"/> to add a mapping.</param>
+        /// <returns>A <see cref="IDynamicTypeMappingBuilder"/> instance for further configuration.</returns>
+        new IDynamicTypeMappingBuilder Add(Type type);
 
         /// <summary>
         /// Tries to resolve all mappings which does not have a mapped type set yet.
@@ -165,16 +200,50 @@ namespace InjeCtor.Core.Registration
     }
 
     /// <summary>
+    /// Builder for set up type mappings.
+    /// </summary>
+    public interface ITypeMappingBuilder : ITypeMapping
+    {
+        /// <summary>
+        /// Set's the type which should be used for the mapping as mapped type with creation instructions <see cref="CreationInstruction.Always"/>.
+        /// </summary>
+        /// <param name="tpye">The type which should be used.</param>
+        /// <returns>Own instance for further processing.</returns>
+        ITypeMappingBuilder As(Type tpye);
+
+        /// <summary>
+        /// Set's the type which should be used for the mapping as mapped type with creation instructions <see cref="CreationInstruction.Scope"/>.
+        /// </summary>
+        /// <param name="tpye">The type which should be used.</param>
+        /// <returns>Own instance for further processing.</returns>
+        ITypeMappingBuilder AsScopeSingleton(Type type);
+
+        /// <summary>
+        /// Set's the type which should be used for the mapping as mapped type with creation instructions <see cref="CreationInstruction.Singleton"/>.
+        /// </summary>
+        /// <param name="tpye">The type which should be used.</param>
+        /// <returns>Own instance for further processing.</returns>
+        ITypeMappingBuilder AsSingleton(Type type);
+
+        /// <summary>
+        /// Set's the type to use for the mapping and set's it's singleton to the passed <paramref name="instance"/>.
+        /// </summary>
+        /// <param name="instance">The instance to use as singleton.</param>
+        /// <returns>Own instance for furhter processing.</returns>
+        ITypeMappingBuilder AsSingleton(object instance);
+    }
+
+    /// <summary>
     /// Item for further definitions / settings.
     /// </summary>
-    public interface ITypeMapping<TDef> : ITypeMapping
+    public interface ITypeMappingBuilder<TDef> : ITypeMappingBuilder
     {
         /// <summary>
         /// Set's the type which should be used for the mapping as mapped type with creation instruction <see cref="CreationInstruction.Always"/>.
         /// </summary>
         /// <typeparam name="T">The type which should be used.</typeparam>
         /// <returns>Own instance for further processing.</returns>
-        ITypeMapping<TDef> As<T>() where T : TDef;
+        ITypeMappingBuilder<TDef> As<T>() where T : TDef;
 
         /// <summary>
         /// Set's the type to use for the mapping and set's it's singleton to the passed <paramref name="instance"/>.
@@ -182,21 +251,21 @@ namespace InjeCtor.Core.Registration
         /// <typeparam name="T">The type which should be used.</typeparam>
         /// <param name="instance">The instance of <typeparamref name="T"/> to use as singleton.</param>
         /// <returns>Own instance for furhter processing.</returns>
-        ITypeMapping<TDef> AsSingleton<T>(T instance) where T : TDef;
+        ITypeMappingBuilder<TDef> AsSingleton<T>(T instance) where T : TDef;
 
         /// <summary>
         /// Set's the type which should be used for the mapping as mapped type with creation instruction <see cref="CreationInstruction.Singleton"/>.
         /// </summary>
         /// <typeparam name="T">The type which should be used.</typeparam>
         /// <returns>Own instance for further processing.</returns>
-        ITypeMapping<TDef> AsSingleton<T>() where T : TDef;
+        ITypeMappingBuilder<TDef> AsSingleton<T>() where T : TDef;
 
         /// <summary>
         /// Set's the type which should be used for the mapping as mapped type with creation instruction <see cref="CreationInstruction.Scope"/>.
         /// </summary>
         /// <typeparam name="T">The type which should be used.</typeparam>
         /// <returns>Own instance for further processing.</returns>
-        ITypeMapping<TDef> AsScopeSingleton<T>() where T: TDef;
+        ITypeMappingBuilder<TDef> AsScopeSingleton<T>() where T : TDef;
     }
 
     /// <summary>
@@ -212,11 +281,10 @@ namespace InjeCtor.Core.Registration
     }
 
     /// <summary>
-    /// Type mapping with suppord of searching for implementations with try resolving the type in assemblies.
+    /// Type mapping with support of searching for implementations with try resolving the type in assemblies.
     /// But it's also supported to directly set a mapped type.
     /// </summary>
-    /// <typeparam name="TDef">The type for which the mapping should get a mapped type.</typeparam>
-    public interface IDynamicTypeMapping<TDef> : ITypeMapping<TDef>
+    public interface IDynamicTypeMappingBuilder : ITypeMappingBuilder
     {
         /// <summary>
         /// Tries to resolve a mapped type for the source type in the app domain.
@@ -230,24 +298,32 @@ namespace InjeCtor.Core.Registration
         /// <param name="assembly">The <see cref="Assembly"/>s to search a suitable mapped type.</param>
         /// <returns><see langword="True"/> if a matched type was found, otherwise <see langword="false"/>.</returns>
         bool Resolve(params Assembly[] assemblies);
+    }
 
+    /// <summary>
+    /// Type mapping with support of searching for implementations with try resolving the type in assemblies.
+    /// But it's also supported to directly set a mapped type.
+    /// </summary>
+    /// <typeparam name="TDef">The type for which the mapping should get a mapped type.</typeparam>
+    public interface IDynamicTypeMappingBuilder<TDef> : IDynamicTypeMappingBuilder, ITypeMappingBuilder<TDef>
+    {
         /// <summary>
         /// Set's the type which should be used for the mapping as mapped typewith creation instruction <see cref="CreationInstruction.Always"/>.
         /// </summary>
         /// <typeparam name="T">The type which should be used.</typeparam>
         /// <returns>Own instance for further processing.</returns>
-        new IDynamicTypeMapping<TDef> As<T>() where T : TDef;
+        new IDynamicTypeMappingBuilder<TDef> As<T>() where T : TDef;
 
         /// <summary>
         /// Sets the creation instruction to <see cref="CreationInstruction.Singleton"/>.
         /// </summary>
         /// <returns></returns>
-        IDynamicTypeMapping<TDef> AsSingleton();
+        IDynamicTypeMappingBuilder<TDef> AsSingleton();
 
         /// <summary>
         /// Sets the creation instruction to <see cref="CreationInstruction.Scope"/>.
         /// </summary>
         /// <returns>Own instance for further processing.</returns>
-        IDynamicTypeMapping<TDef> AsScopeSingleton();
+        IDynamicTypeMappingBuilder<TDef> AsScopeSingleton();
     }
 }

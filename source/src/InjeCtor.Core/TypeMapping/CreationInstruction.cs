@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace InjeCtor.Core.Registration
+namespace InjeCtor.Core.TypeMapping
 {
     /// <summary>
     /// Instruction for the creation of a new instance of a type.
