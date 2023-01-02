@@ -1,9 +1,9 @@
 ﻿using InjeCtor.Core.Exceptions;
-using InjeCtor.Core.Registration;
 using InjeCtor.Core.Scope;
 using InjeCtor.Core.Test.Interfaces;
 using InjeCtor.Core.Test.TestClasses;
 using InjeCtor.Core.TypeInformation;
+using InjeCtor.Core.TypeMapping;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -228,7 +228,7 @@ namespace InjeCtor.Core.Test.IntegrationTests
         [TestCase(true, CreationInstruction.Singleton)]
         public void Create_WithTypeInformations_PropertyInjected(bool addTypeInformationForNonAttributeProperty, CreationInstruction creationInstruction)
         {
-            ITypeMapping<IDummyInterface> mapping = mInjeCtor.Mapper.Add<IDummyInterface>();
+            ITypeMappingBuilder<IDummyInterface> mapping = mInjeCtor.Mapper.Add<IDummyInterface>();
             switch (creationInstruction)
             {
                 case CreationInstruction.Always:

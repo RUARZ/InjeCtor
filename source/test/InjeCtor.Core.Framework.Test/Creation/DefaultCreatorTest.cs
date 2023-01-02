@@ -1,5 +1,4 @@
 ﻿using InjeCtor.Core.Creation;
-using InjeCtor.Core.Registration;
 using InjeCtor.Core.Test.Interfaces;
 using InjeCtor.Core.Framework.Test.TestClasses;
 using NUnit.Framework;
@@ -8,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using InjeCtor.Core.TypeMapping;
 
 namespace InjeCtor.Core.Framework.Test.Creation
 {
