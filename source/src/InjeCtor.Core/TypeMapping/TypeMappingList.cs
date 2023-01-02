@@ -2,7 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace InjeCtor.Core.Registration
+namespace InjeCtor.Core.TypeMapping
 {
     /// <summary>
     /// Generic dictionary for type mappings.
@@ -13,8 +13,8 @@ namespace InjeCtor.Core.Registration
 
         private readonly object mMappedTypesLockObj = new object();
         private readonly HashSet<Type> mMappedTypes = new HashSet<Type>();
-        private readonly ConcurrentDictionary<Type, ITypeMapping> mNotFinishedMappings = new ConcurrentDictionary<Type, ITypeMapping>();
-        private readonly ConcurrentDictionary<Type, ITypeMapping> mFinishedMappings = new ConcurrentDictionary<Type, ITypeMapping>();
+        private readonly ConcurrentDictionary<Type, ITypeMappingBuilder> mNotFinishedMappings = new ConcurrentDictionary<Type, ITypeMappingBuilder>();
+        private readonly ConcurrentDictionary<Type, ITypeMappingBuilder> mFinishedMappings = new ConcurrentDictionary<Type, ITypeMappingBuilder>();
 
         #endregion
 
@@ -27,11 +27,11 @@ namespace InjeCtor.Core.Registration
         /// <param name="mapping">The <see cref="ITypeMapping"/> implementation to add.</param>
         /// <returns>The added <see cref="ITypeMapping"/>.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the requested source type to add was already added to the list!</exception>
-        public T Add<T>(T mapping) where T : ITypeMapping, INotifyOnMappingChangedTypeMapping
+        public T Add<T>(T mapping) where T : ITypeMappingBuilder, INotifyOnMappingChangedTypeMapping
         {
             if (mMappedTypes.Contains(mapping.SourceType))
             {
-                if (mNotFinishedMappings.TryGetValue(mapping.SourceType, out ITypeMapping? existingMapping))
+                if (mNotFinishedMappings.TryGetValue(mapping.SourceType, out ITypeMappingBuilder? existingMapping))
                     return (T)existingMapping;
 
                 throw new InvalidOperationException($"The type '{typeof(T).Name}' was alread added!");
@@ -50,7 +50,7 @@ namespace InjeCtor.Core.Registration
                     mapping.MappingChanged += Mapping_MappingChanged;
                 }
             }
-            
+
             return mapping;
         }
 
@@ -91,7 +91,7 @@ namespace InjeCtor.Core.Registration
         /// <returns>The found <see cref="ITypeMapping"/> or <see langword="null"/> if no <see cref="ITypeMapping"/> could be found.</returns>
         public ITypeMapping? GetMapping(Type type)
         {
-            if (mFinishedMappings.TryGetValue(type, out ITypeMapping mapping))
+            if (mFinishedMappings.TryGetValue(type, out ITypeMappingBuilder mapping))
                 return mapping;
 
             return null;
@@ -103,20 +103,20 @@ namespace InjeCtor.Core.Registration
 
         private void Mapping_MappingChanged(object sender, EventArgs e)
         {
-            ITypeMapping? mapping = sender as ITypeMapping;
+            ITypeMappingBuilder? mapping = sender as ITypeMappingBuilder;
 
             if (mapping is null)
                 return;
 
             if (mapping.MappedType is null)
             {
-                mFinishedMappings.TryRemove(mapping.SourceType, out ITypeMapping _);
+                mFinishedMappings.TryRemove(mapping.SourceType, out ITypeMappingBuilder _);
                 mNotFinishedMappings.TryAdd(mapping.SourceType, mapping);
             }
             else
             {
                 mFinishedMappings.TryAdd(mapping.SourceType, mapping);
-                mNotFinishedMappings.TryRemove(mapping.SourceType, out ITypeMapping _);
+                mNotFinishedMappings.TryRemove(mapping.SourceType, out ITypeMappingBuilder _);
             }
         }
 

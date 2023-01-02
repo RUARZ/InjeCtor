@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace InjeCtor.Core.Registration
+namespace InjeCtor.Core.TypeMapping
 {
     public class DynamicTypeMapper : IDynamicTypeMapper, ITypeMappingProvider
     {
@@ -27,7 +27,7 @@ namespace InjeCtor.Core.Registration
         /// which takes a <see cref="Func{TResult}"/> parameter!
         /// </summary>
         public DynamicTypeMapper()
-            :this(null)
+            : this(null)
         {
         }
 
@@ -49,15 +49,13 @@ namespace InjeCtor.Core.Registration
         public event EventHandler<MappingAddedEventArgs>? MappingAdded;
 
         /// <inheritdoc/>
-        ITypeMapping<T> ITypeMapper.Add<T>()
+        ITypeMappingBuilder<T> ITypeMapper.Add<T>()
         {
-            TypeMapping<T> mapping = new TypeMapping<T>();
-            mapping.MappingChanged += Mapping_MappingChanged;
-            return mMappingList.Add(mapping); // in this case a normal type mapping is fine.
+            return Add<T>();
         }
 
         /// <inheritdoc/>
-        public IDynamicTypeMapping<T> Add<T>()
+        public IDynamicTypeMappingBuilder<T> Add<T>()
         {
             DynamicTypeMapping<T> mapping = new DynamicTypeMapping<T>();
             mapping.MappingChanged += Mapping_MappingChanged;
@@ -65,11 +63,43 @@ namespace InjeCtor.Core.Registration
         }
 
         /// <inheritdoc/>
+        ITypeMappingBuilder ITypeMapper.Add(Type type)
+        {
+            return Add(type);
+        }
+
+        /// <inheritdoc/>
+        public IDynamicTypeMappingBuilder Add(Type type)
+        {
+            DynamicTypeMapping mapping = new DynamicTypeMapping(type);
+            mapping.MappingChanged += Mapping_MappingChanged;
+            return mMappingList.Add(mapping);
+        }
+
+        /// <inheritdoc/>
+        public void AddTransient(Type type)
+        {
+            Add(type).As(type);
+        }
+
+        /// <inheritdoc/>
+        public void AddScopeSingleton(Type type)
+        {
+            Add(type).AsScopeSingleton(type);
+        }
+
+        /// <inheritdoc/>
+        public void AddSingleton(Type type)
+        {
+            Add(type).AsSingleton(type);
+        }
+
+        /// <inheritdoc/>
         public bool Resolve()
         {
             if (mGetAssemblyFunc != null)
                 return Resolve(mGetAssemblyFunc.Invoke() ?? new Assembly[0]);
-            
+
             return Resolve(AppDomain.CurrentDomain.GetAssemblies());
         }
 
@@ -78,7 +108,7 @@ namespace InjeCtor.Core.Registration
         {
             ConcurrentDictionary<Type, ITypeMapping> unfinishedMappings = GetNotFinishedTypeMappings();
             IReadOnlyList<TypeResolver>? resolvers = CreateTypeResolver(unfinishedMappings);
-            ConcurrentDictionary<Type, List<Type>> resolvedTypes = ResolveTypes(resolvers, assemblies);        
+            ConcurrentDictionary<Type, List<Type>> resolvedTypes = ResolveTypes(resolvers, assemblies);
             return SetMappings(unfinishedMappings, resolvedTypes);
         }
 

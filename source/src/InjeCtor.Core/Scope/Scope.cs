@@ -1,7 +1,7 @@
 ﻿using InjeCtor.Core.Creation;
 using InjeCtor.Core.Invoke;
-using InjeCtor.Core.Registration;
 using InjeCtor.Core.TypeInformation;
+using InjeCtor.Core.TypeMapping;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

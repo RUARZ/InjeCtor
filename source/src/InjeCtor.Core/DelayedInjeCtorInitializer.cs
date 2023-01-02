@@ -1,7 +1,7 @@
 ﻿using InjeCtor.Core.Builder;
-using InjeCtor.Core.Registration;
 using InjeCtor.Core.Scope;
 using InjeCtor.Core.TypeInformation;
+using InjeCtor.Core.TypeMapping;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
