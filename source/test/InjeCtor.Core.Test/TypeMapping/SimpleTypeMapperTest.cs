@@ -1,8 +1,9 @@
-﻿using InjeCtor.Core.Registration;
-using InjeCtor.Core.Test.Interfaces;
+﻿using InjeCtor.Core.Test.Interfaces;
+using InjeCtor.Core.TypeMapping;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace InjeCtor.Core.Test.Registration
 {
@@ -36,8 +37,33 @@ namespace InjeCtor.Core.Test.Registration
             IReadOnlyList<ITypeMapping> items = mTypeMapper.GetTypeMappings();
 
             Assert.AreEqual(2, items.Count);
-            AssertTypeMapping(items[0], typeof(ICalculator), typeof(Calculator), CreationInstruction.Always);
-            AssertTypeMapping(items[1], typeof(IGreeter), typeof(Greeter), CreationInstruction.Always);
+            
+            ITypeMapping? mapping = items.FirstOrDefault(x => x.SourceType == typeof(ICalculator));
+            AssertTypeMapping(mapping, typeof(ICalculator), typeof(Calculator), CreationInstruction.Always);
+            mapping = items.FirstOrDefault(x => x.SourceType == typeof(IGreeter));
+            AssertTypeMapping(mapping, typeof(IGreeter), typeof(Greeter), CreationInstruction.Always);
+        }
+
+        [Test]
+        public void Add_WithType_Successfull()
+        {
+            mTypeMapper.Add(typeof(ICalculator)).As(typeof(Calculator));
+            mTypeMapper.Add(typeof(IGreeter)).As(typeof(Greeter));
+
+            IReadOnlyList<ITypeMapping> items = mTypeMapper.GetTypeMappings();
+
+            Assert.AreEqual(2, items.Count);
+
+            ITypeMapping? mapping = items.FirstOrDefault(x => x.SourceType == typeof(ICalculator));
+            AssertTypeMapping(mapping, typeof(ICalculator), typeof(Calculator), CreationInstruction.Always);
+            mapping = items.FirstOrDefault(x => x.SourceType == typeof(IGreeter));
+            AssertTypeMapping(mapping, typeof(IGreeter), typeof(Greeter), CreationInstruction.Always);
+        }
+
+        [Test]
+        public void Add_WithType_InvalidMappedType()
+        {
+            Assert.Throws<InvalidOperationException>(() => mTypeMapper.Add(typeof(ICalculator)).As(typeof(Greeter)));
         }
 
         [Test]
@@ -96,8 +122,11 @@ namespace InjeCtor.Core.Test.Registration
             IReadOnlyList<ITypeMapping> items = mTypeMapper.GetTypeMappings();
 
             Assert.AreEqual(2, items.Count);
-            AssertTypeMapping(items[0], typeof(ICalculator), typeof(Calculator), CreationInstruction.Scope);
-            AssertTypeMapping(items[1], typeof(IGreeter), typeof(Greeter), CreationInstruction.Singleton);
+
+            ITypeMapping? mapping = items.FirstOrDefault(x => x.SourceType == typeof(ICalculator));
+            AssertTypeMapping(mapping, typeof(ICalculator), typeof(Calculator), CreationInstruction.Scope);
+            mapping = items.FirstOrDefault(x => x.SourceType == typeof(IGreeter));
+            AssertTypeMapping(mapping, typeof(IGreeter), typeof(Greeter), CreationInstruction.Singleton);
         }
 
         [Test]
@@ -112,8 +141,11 @@ namespace InjeCtor.Core.Test.Registration
             IReadOnlyList<ITypeMapping> items = mTypeMapper.GetTypeMappings();
 
             Assert.AreEqual(2, items.Count);
-            AssertTypeMapping(items[0], typeof(ICalculator), typeof(Calculator), CreationInstruction.Singleton, calc);
-            AssertTypeMapping(items[1], typeof(IGreeter), typeof(Greeter), CreationInstruction.Singleton, greeter);
+
+            ITypeMapping? mapping = items.FirstOrDefault(x => x.SourceType == typeof(ICalculator));
+            AssertTypeMapping(mapping, typeof(ICalculator), typeof(Calculator), CreationInstruction.Singleton, calc);
+            mapping = items.FirstOrDefault(x => x.SourceType == typeof(IGreeter));
+            AssertTypeMapping(mapping, typeof(IGreeter), typeof(Greeter), CreationInstruction.Singleton, greeter);
         }
 
         [Test]
@@ -141,6 +173,29 @@ namespace InjeCtor.Core.Test.Registration
                     break;
                 case CreationInstruction.Singleton:
                     mTypeMapper.AddSingleton<Calculator>();
+                    break;
+            }
+
+            var item = mTypeMapper.GetTypeMapping<Calculator>();
+
+            AssertTypeMapping(item, typeof(Calculator), typeof(Calculator), instruction, null);
+        }
+
+        [TestCase(CreationInstruction.Always)]
+        [TestCase(CreationInstruction.Scope)]
+        [TestCase(CreationInstruction.Singleton)]
+        public void Add_MappingOfClassDirectlyWithType_MappingAdded(CreationInstruction instruction)
+        {
+            switch (instruction)
+            {
+                case CreationInstruction.Always:
+                    mTypeMapper.AddTransient(typeof(Calculator));
+                    break;
+                case CreationInstruction.Scope:
+                    mTypeMapper.AddScopeSingleton(typeof(Calculator));
+                    break;
+                case CreationInstruction.Singleton:
+                    mTypeMapper.AddSingleton(typeof(Calculator));
                     break;
             }
 

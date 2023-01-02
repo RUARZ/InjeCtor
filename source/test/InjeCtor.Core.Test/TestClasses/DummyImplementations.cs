@@ -1,10 +1,10 @@
 ﻿using InjeCtor.Core.Builder;
 using InjeCtor.Core.Creation;
 using InjeCtor.Core.Invoke;
-using InjeCtor.Core.Registration;
 using InjeCtor.Core.Scope;
 using InjeCtor.Core.Test.Interfaces;
 using InjeCtor.Core.TypeInformation;
+using InjeCtor.Core.TypeMapping;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,24 +26,67 @@ namespace InjeCtor.Core.Test.TestClasses
         public object? Instance { get; set; }
     }
 
-    class DummyTypeMapping<T> : SimpleDummyTypeMapping, ITypeMapping<T>
+    class DummyTypeMapping : SimpleDummyTypeMapping, ITypeMappingBuilder
     {
-        public ITypeMapping<T> As<T1>() where T1 : T
+        public ITypeMappingBuilder As(Type tpye)
         {
             return this;
         }
 
-        public ITypeMapping<T> AsScopeSingleton<T1>() where T1 : T
+        public ITypeMappingBuilder AsScopeSingleton(Type type)
         {
             return this;
         }
 
-        public ITypeMapping<T> AsSingleton<T1>(T1 instance) where T1 : T
+        public ITypeMappingBuilder AsSingleton(Type type)
         {
             return this;
         }
 
-        public ITypeMapping<T> AsSingleton<T1>() where T1 : T
+        public ITypeMappingBuilder AsSingleton(object instance)
+        {
+            return this;
+        }
+    }
+
+    class DummyTypeMapping<T> : SimpleDummyTypeMapping, ITypeMappingBuilder<T>
+    {
+        public ITypeMappingBuilder<T> As<T1>() where T1 : T
+        {
+            return this;
+        }
+
+        public ITypeMappingBuilder As(Type tpye)
+        {
+            return this;
+        }
+
+        public ITypeMappingBuilder<T> AsScopeSingleton<T1>() where T1 : T
+        {
+            return this;
+        }
+
+        public ITypeMappingBuilder AsScopeSingleton(Type type)
+        {
+            return this;
+        }
+
+        public ITypeMappingBuilder<T> AsSingleton<T1>(T1 instance) where T1 : T
+        {
+            return this;
+        }
+
+        public ITypeMappingBuilder<T> AsSingleton<T1>() where T1 : T
+        {
+            return this;
+        }
+
+        public ITypeMappingBuilder AsSingleton(Type type)
+        {
+            return this;
+        }
+
+        public ITypeMappingBuilder AsSingleton(object instance)
         {
             return this;
         }
@@ -67,7 +110,7 @@ namespace InjeCtor.Core.Test.TestClasses
             mDirectSingletons.Add(type.FullName, instance);
         }
 
-        public ITypeMapping<T> Add<T>()
+        public ITypeMappingBuilder<T> Add<T>()
         {
             DummyTypeMapping<T> mapping = new DummyTypeMapping<T>();
             mapping.SourceType = typeof(T);
@@ -154,6 +197,30 @@ namespace InjeCtor.Core.Test.TestClasses
         public void AddSingleton<T>(T instance) where T : class
         {
             throw new NotImplementedException();
+        }
+
+        public ITypeMappingBuilder Add(Type type)
+        {
+            DummyTypeMapping mapping = new DummyTypeMapping();
+            mapping.SourceType = type;
+            mapping.MappedType = type;
+            MappingAdded?.Invoke(this, new MappingAddedEventArgs(mapping));
+            return mapping;
+        }
+
+        public void AddTransient(Type type)
+        {
+            Add(type);
+        }
+
+        public void AddScopeSingleton(Type type)
+        {
+            Add(type).AsScopeSingleton(type);
+        }
+
+        public void AddSingleton(Type type)
+        {
+            Add(type).AsSingleton(type);
         }
     }
 

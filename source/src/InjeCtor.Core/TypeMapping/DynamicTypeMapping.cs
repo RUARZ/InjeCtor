@@ -140,7 +140,7 @@ namespace InjeCtor.Core.TypeMapping
         {
             AsSingleton<TMapped>();
 
-            Instance = Instance;
+            Instance = instance;
 
             return this;
         }

@@ -116,7 +116,7 @@ namespace InjeCtor.Core.TypeMapping
         /// <param name="type">The <see cref="Type"/> to be validated.</param>
         protected void ValidateType(Type type)
         {
-            if (SourceType.IsAssignableFrom(type))
+            if (!SourceType.IsAssignableFrom(type))
                 throw new InvalidOperationException("The type is not valid for the source type!");
         }
 

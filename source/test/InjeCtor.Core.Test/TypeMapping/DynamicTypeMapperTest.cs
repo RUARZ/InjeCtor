@@ -1,6 +1,6 @@
-﻿using InjeCtor.Core.Registration;
-using InjeCtor.Core.Test.Interfaces;
+﻿using InjeCtor.Core.Test.Interfaces;
 using InjeCtor.Core.Test.RuntimeLoading;
+using InjeCtor.Core.TypeMapping;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -61,9 +61,34 @@ namespace InjeCtor.Core.Test.Registration
         }
 
         [Test]
+        public void AddDynamicMapping_WithType_AppDomain_Successfull()
+        {
+            mTypeMapper.Add(typeof(ICalculator));
+
+            Assert.IsTrue(mTypeMapper.Resolve());
+
+            ITypeMapping? mapping = mTypeMapper.GetTypeMapping<ICalculator>();
+            AssertTypeMapping(mapping, typeof(ICalculator), typeof(Calculator), CreationInstruction.Always);
+        }
+
+        [Test]
         public void AddDynamicMapping_AppDomain_ResolveOnMappingAdd_Successfull()
         {
             Assert.IsTrue(mTypeMapper.Add<ICalculator>().Resolve());
+
+            ITypeMapping? item = mTypeMapper.GetTypeMapping<ICalculator>();
+
+            AssertTypeMapping(item, typeof(ICalculator), typeof(Calculator), CreationInstruction.Always);
+
+            item = mTypeMapper.GetTypeMapping(typeof(ICalculator));
+
+            AssertTypeMapping(item, typeof(ICalculator), typeof(Calculator), CreationInstruction.Always);
+        }
+
+        [Test]
+        public void AddDynamicMapping_WithType_ResolveOnMappingAdd_Successfull()
+        {
+            Assert.IsTrue(mTypeMapper.Add(typeof(ICalculator)).Resolve(GetType().Assembly));
 
             ITypeMapping? item = mTypeMapper.GetTypeMapping<ICalculator>();
 
@@ -108,8 +133,10 @@ namespace InjeCtor.Core.Test.Registration
             IReadOnlyList<ITypeMapping>? mappings = mTypeMapper.GetTypeMappings();
             Assert.IsNotNull(mappings);
             Assert.AreEqual(2, mappings.Count);
-            AssertTypeMapping(mappings[0], typeof(ICalculator), typeof(Calculator), CreationInstruction.Scope);
-            AssertTypeMapping(mappings[1], typeof(IGreeter), typeof(Greeter), CreationInstruction.Singleton);
+            ITypeMapping? mapping = mappings.FirstOrDefault(x => x.SourceType == typeof(ICalculator));
+            AssertTypeMapping(mapping, typeof(ICalculator), typeof(Calculator), CreationInstruction.Scope);
+            mapping = mappings.FirstOrDefault(x => x.SourceType == typeof(IGreeter));
+            AssertTypeMapping(mapping, typeof(IGreeter), typeof(Greeter), CreationInstruction.Singleton);
         }
 
         [Test]
@@ -122,8 +149,10 @@ namespace InjeCtor.Core.Test.Registration
             IReadOnlyList<ITypeMapping>? mappings = mTypeMapper.GetTypeMappings();
             Assert.IsNotNull(mappings);
             Assert.AreEqual(2, mappings.Count);
-            AssertTypeMapping(mappings[0], typeof(ICalculator), typeof(Calculator), CreationInstruction.Scope);
-            AssertTypeMapping(mappings[1], typeof(IGreeter), typeof(Greeter), CreationInstruction.Singleton);
+            ITypeMapping? mapping = mappings.FirstOrDefault(x => x.SourceType == typeof(ICalculator));
+            AssertTypeMapping(mapping, typeof(ICalculator), typeof(Calculator), CreationInstruction.Scope);
+            mapping = mappings.FirstOrDefault(x => x.SourceType == typeof(IGreeter));
+            AssertTypeMapping(mapping, typeof(IGreeter), typeof(Greeter), CreationInstruction.Singleton);
         }
 
         [Test]
@@ -137,8 +166,10 @@ namespace InjeCtor.Core.Test.Registration
             IReadOnlyList<ITypeMapping>? mappings = mTypeMapper.GetTypeMappings();
             Assert.IsNotNull(mappings);
             Assert.AreEqual(2, mappings.Count);
-            AssertTypeMapping(mappings[0], typeof(ICalculator), typeof(Calculator), CreationInstruction.Singleton, calc);
-            AssertTypeMapping(mappings[1], typeof(IGreeter), typeof(Greeter), CreationInstruction.Singleton, greeter);
+            ITypeMapping? mapping = mappings.FirstOrDefault(x => x.SourceType == typeof(ICalculator));
+            AssertTypeMapping(mapping, typeof(ICalculator), typeof(Calculator), CreationInstruction.Singleton, calc);
+            mapping = mappings.FirstOrDefault(x => x.SourceType == typeof(IGreeter));
+            AssertTypeMapping(mapping, typeof(IGreeter), typeof(Greeter), CreationInstruction.Singleton, greeter);
         }
 
         [Test]
@@ -223,6 +254,29 @@ namespace InjeCtor.Core.Test.Registration
                     break;
                 case CreationInstruction.Singleton:
                     mTypeMapper.AddSingleton<Calculator>();
+                    break;
+            }
+
+            var item = mTypeMapper.GetTypeMapping<Calculator>();
+
+            AssertTypeMapping(item, typeof(Calculator), typeof(Calculator), instruction, null);
+        }
+
+        [TestCase(CreationInstruction.Always)]
+        [TestCase(CreationInstruction.Scope)]
+        [TestCase(CreationInstruction.Singleton)]
+        public void Add_MappingOfClassDirectly_WithType_MappingAdded(CreationInstruction instruction)
+        {
+            switch (instruction)
+            {
+                case CreationInstruction.Always:
+                    mTypeMapper.AddTransient(typeof(Calculator));
+                    break;
+                case CreationInstruction.Scope:
+                    mTypeMapper.AddScopeSingleton(typeof(Calculator));
+                    break;
+                case CreationInstruction.Singleton:
+                    mTypeMapper.AddSingleton(typeof(Calculator));
                     break;
             }
 

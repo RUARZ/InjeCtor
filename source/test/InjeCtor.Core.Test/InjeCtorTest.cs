@@ -1,9 +1,9 @@
 ﻿using InjeCtor.Core.Creation;
-using InjeCtor.Core.Registration;
 using InjeCtor.Core.Scope;
 using InjeCtor.Core.Test.Interfaces;
 using InjeCtor.Core.Test.TestClasses;
 using InjeCtor.Core.TypeInformation;
+using InjeCtor.Core.TypeMapping;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
