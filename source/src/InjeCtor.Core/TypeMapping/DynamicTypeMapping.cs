@@ -50,6 +50,24 @@ namespace InjeCtor.Core.TypeMapping
             return true;
         }
 
+        /// <inheritdoc/>
+        public IDynamicTypeMappingBuilder AsScopeSingleton()
+        {
+            CreationInstruction = CreationInstruction.Scope;
+
+            RaiseMappingChanged();
+            return this;
+        }
+
+        /// <inheritdoc/>
+        public IDynamicTypeMappingBuilder AsSingleton()
+        {
+            CreationInstruction = CreationInstruction.Singleton;
+
+            RaiseMappingChanged();
+            return this;
+        }
+
         #endregion
 
         #region IMappedTypeSetableTypeMapping
@@ -110,7 +128,7 @@ namespace InjeCtor.Core.TypeMapping
         }
 
         /// <inheritdoc/>
-        public IDynamicTypeMappingBuilder<T> AsScopeSingleton()
+        public new IDynamicTypeMappingBuilder<T> AsScopeSingleton()
         {
             CreationInstruction = CreationInstruction.Scope;
 
@@ -127,7 +145,7 @@ namespace InjeCtor.Core.TypeMapping
         }
 
         /// <inheritdoc/>
-        public IDynamicTypeMappingBuilder<T> AsSingleton()
+        public new IDynamicTypeMappingBuilder<T> AsSingleton()
         {
             CreationInstruction = CreationInstruction.Singleton;
 

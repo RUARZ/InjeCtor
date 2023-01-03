@@ -21,7 +21,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{F47997B6-02D
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InjeCtor.Core.Samples", "doc\InjeCtor.Core.Samples\InjeCtor.Core.Samples.csproj", "{DC4F41F4-B0CB-4628-B667-5DA880F48767}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InjeCtor.Configuration", "src\InjeCtor.Configuration\InjeCtor.Configuration.csproj", "{F86C19AF-E16A-4DD2-9DC0-9ED30B4BD343}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InjeCtor.Configuration", "src\InjeCtor.Configuration\InjeCtor.Configuration.csproj", "{F86C19AF-E16A-4DD2-9DC0-9ED30B4BD343}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InjeCtor.Configuration.Test", "test\InjeCtor.Configuration.Test\InjeCtor.Configuration.Test.csproj", "{782BF4C6-8464-4CE0-88B5-6B810F31C703}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +59,10 @@ Global
 		{F86C19AF-E16A-4DD2-9DC0-9ED30B4BD343}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F86C19AF-E16A-4DD2-9DC0-9ED30B4BD343}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F86C19AF-E16A-4DD2-9DC0-9ED30B4BD343}.Release|Any CPU.Build.0 = Release|Any CPU
+		{782BF4C6-8464-4CE0-88B5-6B810F31C703}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{782BF4C6-8464-4CE0-88B5-6B810F31C703}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{782BF4C6-8464-4CE0-88B5-6B810F31C703}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{782BF4C6-8464-4CE0-88B5-6B810F31C703}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -69,6 +75,7 @@ Global
 		{B606E605-BAC9-4B60-BB9A-8141926C2403} = {C2A4230F-35B6-4C29-BE6A-8BA4E073D2B8}
 		{DC4F41F4-B0CB-4628-B667-5DA880F48767} = {F47997B6-02D5-4D2D-BD11-148A0467CD6C}
 		{F86C19AF-E16A-4DD2-9DC0-9ED30B4BD343} = {38781058-D83A-42D2-96DF-7D44E0CA0AF8}
+		{782BF4C6-8464-4CE0-88B5-6B810F31C703} = {C2A4230F-35B6-4C29-BE6A-8BA4E073D2B8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5B9CE685-5CE7-4B9F-92CC-65BD4555C5DC}

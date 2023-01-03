@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xs:schema id="XmlConfigurationSchema"
-    targetNamespace="http://InjeCtor/Configuration/XmlConfigurationSchema.xsd"
+    targetNamespace="http://InjeCtor/Configuration/Xml"
     elementFormDefault="qualified"
-    xmlns="http://InjeCtor/Configuration/XmlConfigurationSchema.xsd"
-    xmlns:mstns="http://InjeCtor/Configuration/XmlConfigurationSchema.xsd"
+    xmlns="http://InjeCtor/Configuration/Xml"
+    xmlns:mstns="http://InjeCtor/Configuration/Xml"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
 >
 	<xs:element name="Config" type="ConfigType" />
@@ -18,7 +18,7 @@
 	<xs:complexType name="InjeCtorType">
 		<xs:sequence>
 			<xs:element name="TypeMapper" type="xs:string" minOccurs="0" maxOccurs="1" />
-			<xs:element name="TypeInformationProvider" type="xs:string" minOccurs="0" maxOccurs="1" />
+			<xs:element name="TypeInformationBuilder" type="xs:string" minOccurs="0" maxOccurs="1" />
 			<xs:element name="Creator" type="xs:string" minOccurs="0" maxOccurs="1" />
 		</xs:sequence>
 		<xs:attribute name="UseDynamicTypeMapper" type="xs:boolean" use="optional"/>
@@ -34,7 +34,7 @@
 
 	<xs:complexType name="CreateInstructionMappingType">
 		<xs:sequence>
-			<xs:element name="Mapping" type="MappingsType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="Mapping" type="MappingType" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
 	

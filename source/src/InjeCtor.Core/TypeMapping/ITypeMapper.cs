@@ -298,6 +298,18 @@ namespace InjeCtor.Core.TypeMapping
         /// <param name="assembly">The <see cref="Assembly"/>s to search a suitable mapped type.</param>
         /// <returns><see langword="True"/> if a matched type was found, otherwise <see langword="false"/>.</returns>
         bool Resolve(params Assembly[] assemblies);
+
+        /// <summary>
+        /// Sets the creation instruction to <see cref="CreationInstruction.Singleton"/>.
+        /// </summary>
+        /// <returns>Own instance for further processing.</returns>
+        IDynamicTypeMappingBuilder AsSingleton();
+
+        /// <summary>
+        /// Sets the creation instruction to <see cref="CreationInstruction.Scope"/>.
+        /// </summary>
+        /// <returns>Own instance for further processing.</returns>
+        IDynamicTypeMappingBuilder AsScopeSingleton();
     }
 
     /// <summary>
@@ -317,13 +329,13 @@ namespace InjeCtor.Core.TypeMapping
         /// <summary>
         /// Sets the creation instruction to <see cref="CreationInstruction.Singleton"/>.
         /// </summary>
-        /// <returns></returns>
-        IDynamicTypeMappingBuilder<TDef> AsSingleton();
+        /// <returns>Own instance for further processing.</returns>
+        new IDynamicTypeMappingBuilder<TDef> AsSingleton();
 
         /// <summary>
         /// Sets the creation instruction to <see cref="CreationInstruction.Scope"/>.
         /// </summary>
         /// <returns>Own instance for further processing.</returns>
-        IDynamicTypeMappingBuilder<TDef> AsScopeSingleton();
+        new IDynamicTypeMappingBuilder<TDef> AsScopeSingleton();
     }
 }
