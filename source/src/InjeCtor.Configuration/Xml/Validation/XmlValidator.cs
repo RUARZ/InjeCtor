@@ -9,7 +9,7 @@ namespace InjeCtor.Configuration.Xml.Validation
     /// <summary>
     /// Class for validating the passed xml configuration
     /// </summary>
-    internal class XmlValidator
+    public class XmlValidator
     {
         #region Private Fields
 

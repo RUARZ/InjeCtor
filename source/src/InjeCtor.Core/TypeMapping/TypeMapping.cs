@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using System;
+[assembly: InternalsVisibleTo("InjeCtor.Configuration.Test")]
 
 namespace InjeCtor.Core.TypeMapping
 {
