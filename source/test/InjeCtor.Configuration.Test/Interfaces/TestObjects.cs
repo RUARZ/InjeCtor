@@ -1,4 +1,5 @@
-﻿using System;
+﻿using InjeCtor.Core.Attribute;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,6 +22,11 @@ namespace InjeCtor.Configuration.Test.Interfaces
 
     }
 
+    interface IInterfaceWithInjection
+    {
+        IInterfaceA SomeImpl { get; }
+    }
+
     class ImplA : IInterfaceA { }
 
     class ImplB : IInterfaceB { }
@@ -28,4 +34,16 @@ namespace InjeCtor.Configuration.Test.Interfaces
     class ImplC : IInterfaceC { }
 
     class DirectClass { }
+
+    class ImplClassWithInjection : IInterfaceWithInjection
+    {
+        [Inject]
+        public IInterfaceA SomeImpl { get; set; }
+    }
+
+    class ClassWithInjectionDirect
+    {
+        [Inject]
+        public IInterfaceA Injected { get; set; }
+    }
 }
