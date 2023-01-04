@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace InjeCtor.Core.Samples.Implementations
 {
-    internal class RoundShield : IShield
+    public class RoundShield : IShield
     {
         public int Defense => 15;
     }

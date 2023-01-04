@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace InjeCtor.Core.Samples.Interfaces
 {
-    internal interface IRequestContext
+    public interface IRequestContext
     {
         IEnumerable<object> Parameters { get; set; }
 

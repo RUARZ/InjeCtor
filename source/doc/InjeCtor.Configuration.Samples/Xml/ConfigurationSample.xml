@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Config xmlns="http://InjeCtor/Configuration/Xml">
+	<!-- 
+		The following block for 'InjeCtor' is optional. It can be used to define if a dynamic mapper
+		should be used instead of the simple mapper (with UseDynamicTypeMapper="true"). Or you can
+		specify your own implementations which should be passed to the IInjeCtor instance after build.
+		If not specified then the default implementations will be used.
+	-->
+	<!--
+	<InjeCtor UseDynamicTypeMapper="false">
+		<TypeMapper>Full Qualified name for the type mapper to use</TypeMapper>
+		<TypeInformationBuilder>Full Qualified name for the type information builder to use</TypeInformationBuilder>
+		<Creator>Full Qualified name for the scope aware creator to use</Creator>
+	</InjeCtor>
+	-->
+	<Mappings>
+		<Always>
+			<Mapping SourceType="InjeCtor.Core.Samples.Interfaces.IPlayer, InjeCtor.Core.Samples" 
+					 MappingType="InjeCtor.Core.Samples.Implementations.Player, InjeCtor.Core.Samples"/>
+			<Mapping SourceType="InjeCtor.Core.Samples.Interfaces.IShield, InjeCtor.Core.Samples" 
+					 MappingType="InjeCtor.Core.Samples.Implementations.RoundShield, InjeCtor.Core.Samples"/>
+			<Mapping SourceType="InjeCtor.Core.Samples.Interfaces.IWeapon, InjeCtor.Core.Samples" 
+					 MappingType="InjeCtor.Core.Samples.Implementations.Sword, InjeCtor.Core.Samples"/>
+		</Always>
+		<ScopeSingleton>
+			<Mapping SourceType="InjeCtor.Core.Samples.Interfaces.IRequestContext, InjeCtor.Core.Samples" 
+					 MappingType="InjeCtor.Core.Samples.Implementations.RequestContext, InjeCtor.Core.Samples"/>
+		</ScopeSingleton>
+		<Singleton>
+			<Mapping SourceType="InjeCtor.Core.Samples.Interfaces.IUserInteraction, InjeCtor.Core.Samples" 
+					 MappingType="InjeCtor.Core.Samples.Implementations.ConsoleUserInteraction, InjeCtor.Core.Samples"/>
+			<!-- 
+				It's also possible to register a 'mapping' to just add a specific type directly.
+				In that case only set the 'SourceType' and set 'DirectType="true"' within the mapping as
+				follows:
+			-->
+			<!--
+			<Mapping SourceType="InjeCtor.Core.Samples.Interfaces.IUserInteraction, InjeCtor.Core.Samples" 
+					 DirectType="true"/>
+			-->
+		</Singleton>
+	</Mappings>
+</Config>

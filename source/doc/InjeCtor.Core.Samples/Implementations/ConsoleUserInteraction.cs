@@ -2,7 +2,7 @@
 
 namespace InjeCtor.Core.Samples.Implementations
 {
-    internal class ConsoleUserInteraction : IUserInteraction
+    public class ConsoleUserInteraction : IUserInteraction
     {
         public T Ask<T>(string question)
         {

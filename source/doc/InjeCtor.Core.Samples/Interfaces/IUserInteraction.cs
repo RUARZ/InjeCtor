@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace InjeCtor.Core.Samples.Interfaces
 {
-    internal interface IUserInteraction
+    public interface IUserInteraction
     {
         T Ask<T>(string question);
 

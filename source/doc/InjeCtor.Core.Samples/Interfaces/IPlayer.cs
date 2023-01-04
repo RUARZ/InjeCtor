@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace InjeCtor.Core.Samples.Interfaces
 {
-    internal interface IPlayer
+    public interface IPlayer
     {
         void StartRunning();
 
@@ -32,7 +32,7 @@ namespace InjeCtor.Core.Samples.Interfaces
         PlayerState State { get; }
     }
 
-    enum PlayerState
+    public enum PlayerState
     {
         Running,
         StandStill,
