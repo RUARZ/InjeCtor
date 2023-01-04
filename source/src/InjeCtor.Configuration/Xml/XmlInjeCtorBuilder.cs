@@ -69,6 +69,12 @@ namespace InjeCtor.Configuration.Xml
 
         #region Public Methods
 
+        /// <summary>
+        /// Parses the passed <paramref name="fileName"/> and set's up the mapping based on the
+        /// configuration within the file.
+        /// </summary>
+        /// <param name="fileName">Path to the xml file to parse.</param>
+        /// <exception cref="FileNotFoundException">Thrown if the file does not exist.</exception>
         public void ParseFile(string fileName)
         {
             if (!File.Exists(fileName))
@@ -80,6 +86,11 @@ namespace InjeCtor.Configuration.Xml
             }
         }
 
+        /// <summary>
+        /// Parses the passed <paramref name="stream"/> and set's up the mapping based on the
+        /// configuration within the stream.
+        /// </summary>
+        /// <param name="stream">The <see cref="Stream"/> with the xml data to parse.</param>
         public void ParseStream(Stream stream)
         {
             XDocument doc = XDocument.Load(stream);
@@ -109,6 +120,8 @@ namespace InjeCtor.Configuration.Xml
                 mInjeCtor = new Core.InjeCtor(mTypeMapper, typeInformationProvider, mScopeAwareCreator);
             else
                 mInjeCtor = new Core.InjeCtor(mTypeMapper, new TypeInformationBuilder(), mScopeAwareCreator);
+
+            mTypeMapper.MappingAdded -= TypeMapper_MappingAdded;
 
             return mInjeCtor;
         }
@@ -149,22 +162,40 @@ namespace InjeCtor.Configuration.Xml
             mTypeInformationBuilder = CreateInstance<ITypeInformationBuilder, TypeInformationBuilder>(injeCtorElement, TYPE_INFORMATION_BUILDER_CONFIGURATION_ELEMENT_NAME);
             mScopeAwareCreator = CreateInstance<IScopeAwareCreator, DefaultCreator>(injeCtorElement, CREATOR_CONFIGURATION_ELEMENT_NAME);
 
+            if (mTypeInformationBuilder != null && mTypeMapper != null)
+            {
+                mTypeMapper.MappingAdded += TypeMapper_MappingAdded;
+            }
+
             XElement mappingsElement = rootElement.Element(mNamespace + MAPPINGS_ELEMENT_NAME);
 
-            AddMappings(mappingsElement, mTypeMapper, mTypeInformationBuilder);
+            AddMappings(mappingsElement, mTypeMapper);
         }
 
-        protected virtual void AddMappings(XElement mappingsElement, ITypeMapper mapper, ITypeInformationBuilder builder)
+        /// <summary>
+        /// Adds the mappings to the type mapper based on the configuration from the <paramref name="mappingsElement"/> sub elements.
+        /// </summary>
+        /// <param name="mappingsElement"><see cref="XElement"/> from the mapping xml element to create the mappings for the different creation instructions.</param>
+        /// <param name="mapper">Implementation of <see cref="ITypeMapper"/> to use to add the mappings.</param>
+        protected virtual void AddMappings(XElement mappingsElement, ITypeMapper mapper)
         {
             if (mappingsElement == null)
                 return;
 
-            AddMappingsForCreationInstruction(mappingsElement, ALWAYS_CREATION_INSTRUCTION_ELEMENT_NAME, CreationInstruction.Always, builder, mapper);
-            AddMappingsForCreationInstruction(mappingsElement, SCOPE_SINGLETON_CREATION_INSTRUCTION_ELEMENT_NAME, CreationInstruction.Scope, builder, mapper);
-            AddMappingsForCreationInstruction(mappingsElement, SINGLETON_CREATION_INSTRUCTION_ELEMENT_NAME, CreationInstruction.Singleton, builder, mapper);
+            AddMappingsForCreationInstruction(mappingsElement, ALWAYS_CREATION_INSTRUCTION_ELEMENT_NAME, CreationInstruction.Always, mapper);
+            AddMappingsForCreationInstruction(mappingsElement, SCOPE_SINGLETON_CREATION_INSTRUCTION_ELEMENT_NAME, CreationInstruction.Scope, mapper);
+            AddMappingsForCreationInstruction(mappingsElement, SINGLETON_CREATION_INSTRUCTION_ELEMENT_NAME, CreationInstruction.Singleton, mapper);
         }
 
-        protected virtual void AddMappingsForCreationInstruction(XElement mappingsElement, string creationInstructionElementName, CreationInstruction creationInstruction, ITypeInformationBuilder builder, ITypeMapper mapper)
+        /// <summary>
+        /// Adds the mappings for a specific <see cref="CreationInstruction"/> from <paramref name="creationInstruction"/> to the 
+        /// passed <paramref name="mapper"/>.
+        /// </summary>
+        /// <param name="mappingsElement">The <see cref="XElement"/> with all mappings.</param>
+        /// <param name="creationInstructionElementName">The name for the <see cref="XElement"/> with the <see cref="CreationInstruction"/> which should be read.</param>
+        /// <param name="creationInstruction">The <see cref="CreationInstruction"/> to set for the mappings.</param>
+        /// <param name="mapper">Implementation of <see cref="ITypeMapper"/> to add the mappings to.</param>
+        protected virtual void AddMappingsForCreationInstruction(XElement mappingsElement, string creationInstructionElementName, CreationInstruction creationInstruction, ITypeMapper mapper)
         {
             XElement? element = mappingsElement?.Element(mNamespace + creationInstructionElementName);
 
@@ -235,7 +266,16 @@ namespace InjeCtor.Configuration.Xml
             }
         }
 
-        private Type? GetTypeFromAttribute(XElement element, string attributeName)
+        /// <summary>
+        /// Reads the attribute with the passed <paramref name="attributeName"/> from <paramref name="element"/>
+        /// and tries to create a <see cref="Type"/> from it if possible.
+        /// </summary>
+        /// <param name="element">The <see cref="XElement"/> from which the attribute should be read.</param>
+        /// <param name="attributeName">The name of the attribute to read.</param>
+        /// <returns>The created <see cref="Type"/> if the attribute could be read and a <see cref="Type"/>
+        /// could be created. Returns <see langword="null"/> if the attribute does not exist / could not be read
+        /// or the type name within the attribute could not be resolved to a <see cref="Type"/>.</returns>
+        protected Type? GetTypeFromAttribute(XElement element, string attributeName)
         {
             if (element is null)
                 return null;
@@ -250,7 +290,16 @@ namespace InjeCtor.Configuration.Xml
             return type;
         }
 
-        private bool GetBoolAttribute(XElement element, string attributeName, bool fallBackValue = default(bool))
+        /// <summary>
+        /// Reads the attribute with the name <paramref name="attributeName"/> from <paramref name="element"/> and tries
+        /// to parse the value to a <see cref="bool"/>.
+        /// </summary>
+        /// <param name="element"><see cref="XElement"/> to read the attribute from.</param>
+        /// <param name="attributeName">The name of the attribute to read.</param>
+        /// <param name="fallBackValue">Value to return if the attribute does not exist or could not be parsed.</param>
+        /// <returns>The parsed <see cref="bool"/> value if possible. If the attribute does not exist or
+        /// could not be parsed to a <see cref="bool"/> then <paramref name="fallBackValue"/> will be returned.</returns>
+        protected bool GetBoolAttribute(XElement element, string attributeName, bool fallBackValue = default(bool))
         {
             if (element is null)
                 return fallBackValue;
@@ -337,6 +386,18 @@ namespace InjeCtor.Configuration.Xml
             {
                 throw new InvalidOperationException($"Failed to create the type '{typeName}' or to cast it to '{typeof(T)}'!", ex);
             }
+        }
+
+        #endregion
+
+        #region Event Handling
+
+        private void TypeMapper_MappingAdded(object sender, MappingAddedEventArgs e)
+        {
+            if (e?.Mapping?.MappedType is null)
+                return;
+
+            mTypeInformationBuilder?.Add(e.Mapping.MappedType);
         }
 
         #endregion

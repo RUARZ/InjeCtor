@@ -378,6 +378,160 @@ namespace InjeCtor.Configuration.Test.Xml
 
             Assert.That(TestCreator.CreationCount, Is.EqualTo(0));
         }
+        
+        [TestCase(CreationInstruction.Always, false)]
+        [TestCase(CreationInstruction.Always, true)]
+        [TestCase(CreationInstruction.Scope, false)]
+        [TestCase(CreationInstruction.Scope, true)]
+        [TestCase(CreationInstruction.Singleton, false)]
+        [TestCase(CreationInstruction.Singleton, true)]
+        public void Build_MappingWithInjectForMappedType_Success(CreationInstruction creationInstruction, bool createFile)
+        {
+            #region Xml Creation
+
+            string[] mappingsXml = new string[]
+                    {
+                        CreateMappingXml(typeof(IInterfaceA), typeof(ImplA), null),
+                        CreateMappingXml(typeof(IInterfaceWithInjection), typeof(ImplClassWithInjection), null),
+                    };
+            string xml;
+
+            switch (creationInstruction)
+            {
+                case CreationInstruction.Always:
+                    xml = CreateXml(string.Empty, CreateAlwaysMappings(mappingsXml), string.Empty, string.Empty);
+                    break;
+                case CreationInstruction.Scope:
+                    xml = CreateXml(string.Empty, string.Empty, CreateScopeMappings(mappingsXml), string.Empty);
+                    break;
+                case CreationInstruction.Singleton:
+                    xml = CreateXml(string.Empty, string.Empty, string.Empty, CreateSingletonMappings(mappingsXml));
+                    break;
+                default:
+                    throw new NotSupportedException($"Unknown creation instruction {creationInstruction}!");
+            }
+
+            if (createFile)
+            {
+                File.WriteAllText(mTestXmlFileName, xml);
+                mBuilder.ParseFile(mTestXmlFileName);
+            }
+            else
+            {
+                // passing string to a stream and parse the stream
+                ParseString(xml);
+            }
+
+            #endregion
+
+            IInjeCtor injeCtor = mBuilder.Build();
+
+            Assert.That(injeCtor, Is.Not.Null);
+
+            Assert.That(injeCtor.Mapper, Is.InstanceOf<SimpleTypeMapper>());
+            Assert.That(injeCtor.TypeInformationProvider, Is.InstanceOf<TypeInformationBuilder>());
+            Assert.That(injeCtor.TypeInformationBuilder, Is.InstanceOf<TypeInformationBuilder>());
+
+            IReadOnlyList<ITypeMapping>? mappings = injeCtor.Mapper.GetTypeMappings();
+
+            Assert.That(mappings, Is.Not.Null);
+            Assert.That(mappings.Count, Is.EqualTo(5));
+
+            ITypeMapping? typeMapping = mappings.FirstOrDefault(x => x.SourceType == typeof(IInterfaceA));
+            Assert.That(typeMapping, Is.Not.Null);
+            Assert.That(typeMapping.MappedType, Is.EqualTo(typeof(ImplA)));
+            Assert.That(typeMapping.CreationInstruction, Is.EqualTo(creationInstruction));
+
+            typeMapping = mappings.FirstOrDefault(x => x.SourceType == typeof(IInterfaceWithInjection));
+            Assert.That(typeMapping, Is.Not.Null);
+            Assert.That(typeMapping.MappedType, Is.EqualTo(typeof(ImplClassWithInjection)));
+            Assert.That(typeMapping.CreationInstruction, Is.EqualTo(creationInstruction));
+
+            IInterfaceWithInjection obj = injeCtor.Get<IInterfaceWithInjection>();
+
+            Assert.That(obj, Is.Not.Null);
+            Assert.That(obj.SomeImpl, Is.Not.Null);
+            Assert.That(obj.SomeImpl, Is.InstanceOf<ImplA>());
+
+            Assert.That(TestCreator.CreationCount, Is.EqualTo(0));
+        }
+
+        [TestCase(CreationInstruction.Always, false)]
+        [TestCase(CreationInstruction.Always, true)]
+        [TestCase(CreationInstruction.Scope, false)]
+        [TestCase(CreationInstruction.Scope, true)]
+        [TestCase(CreationInstruction.Singleton, false)]
+        [TestCase(CreationInstruction.Singleton, true)]
+        public void Build_MappingWithDirectTypeAndInjection_Success(CreationInstruction creationInstruction, bool createFile)
+        {
+            #region Xml Creation
+
+            string[] mappingsXml = new string[]
+                    {
+                        CreateMappingXml(typeof(IInterfaceA), typeof(ImplA), null),
+                        CreateMappingXml(typeof(ClassWithInjectionDirect), null, true),
+                    };
+            string xml;
+
+            switch (creationInstruction)
+            {
+                case CreationInstruction.Always:
+                    xml = CreateXml(string.Empty, CreateAlwaysMappings(mappingsXml), string.Empty, string.Empty);
+                    break;
+                case CreationInstruction.Scope:
+                    xml = CreateXml(string.Empty, string.Empty, CreateScopeMappings(mappingsXml), string.Empty);
+                    break;
+                case CreationInstruction.Singleton:
+                    xml = CreateXml(string.Empty, string.Empty, string.Empty, CreateSingletonMappings(mappingsXml));
+                    break;
+                default:
+                    throw new NotSupportedException($"Unknown creation instruction {creationInstruction}!");
+            }
+
+            if (createFile)
+            {
+                File.WriteAllText(mTestXmlFileName, xml);
+                mBuilder.ParseFile(mTestXmlFileName);
+            }
+            else
+            {
+                // passing string to a stream and parse the stream
+                ParseString(xml);
+            }
+
+            #endregion
+
+            IInjeCtor injeCtor = mBuilder.Build();
+
+            Assert.That(injeCtor, Is.Not.Null);
+
+            Assert.That(injeCtor.Mapper, Is.InstanceOf<SimpleTypeMapper>());
+            Assert.That(injeCtor.TypeInformationProvider, Is.InstanceOf<TypeInformationBuilder>());
+            Assert.That(injeCtor.TypeInformationBuilder, Is.InstanceOf<TypeInformationBuilder>());
+
+            IReadOnlyList<ITypeMapping>? mappings = injeCtor.Mapper.GetTypeMappings();
+
+            Assert.That(mappings, Is.Not.Null);
+            Assert.That(mappings.Count, Is.EqualTo(5));
+
+            ITypeMapping? typeMapping = mappings.FirstOrDefault(x => x.SourceType == typeof(IInterfaceA));
+            Assert.That(typeMapping, Is.Not.Null);
+            Assert.That(typeMapping.MappedType, Is.EqualTo(typeof(ImplA)));
+            Assert.That(typeMapping.CreationInstruction, Is.EqualTo(creationInstruction));
+
+            typeMapping = mappings.FirstOrDefault(x => x.SourceType == typeof(ClassWithInjectionDirect));
+            Assert.That(typeMapping, Is.Not.Null);
+            Assert.That(typeMapping.MappedType, Is.EqualTo(typeof(ClassWithInjectionDirect)));
+            Assert.That(typeMapping.CreationInstruction, Is.EqualTo(creationInstruction));
+
+            ClassWithInjectionDirect obj = injeCtor.Get<ClassWithInjectionDirect>();
+
+            Assert.That(obj, Is.Not.Null);
+            Assert.That(obj.Injected, Is.Not.Null);
+            Assert.That(obj.Injected, Is.InstanceOf<ImplA>());
+
+            Assert.That(TestCreator.CreationCount, Is.EqualTo(0));
+        }
 
         #endregion
 
