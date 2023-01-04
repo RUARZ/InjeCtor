@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace InjeCtor.Core.Samples.Interfaces
 {
-    internal interface IShield
+    public interface IShield
     {
         int Defense { get; }
     }

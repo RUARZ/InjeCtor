@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace InjeCtor.Core.Samples.Interfaces
 {
-    internal interface IWeapon
+    public interface IWeapon
     {
         int Damage { get; }
     }

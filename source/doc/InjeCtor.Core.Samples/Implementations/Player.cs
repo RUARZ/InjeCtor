@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace InjeCtor.Core.Samples.Implementations
 {
-    internal class Player : IPlayer
+    public class Player : IPlayer
     {
         IUserInteraction mUserInteraction;
 

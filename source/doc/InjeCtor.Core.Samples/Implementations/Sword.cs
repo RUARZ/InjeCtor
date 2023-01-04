@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace InjeCtor.Core.Samples.Implementations
 {
-    internal class Sword : IWeapon
+    public class Sword : IWeapon
     {
         public int Damage => 50;
     }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace InjeCtor.Core.Samples.Implementations
 {
-    internal class RequestContext : IRequestContext
+    public class RequestContext : IRequestContext
     {
         public RequestContext()
         {
