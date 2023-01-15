@@ -25,7 +25,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InjeCtor.Configuration", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InjeCtor.Configuration.Test", "test\InjeCtor.Configuration.Test\InjeCtor.Configuration.Test.csproj", "{782BF4C6-8464-4CE0-88B5-6B810F31C703}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InjeCtor.Configuration.Samples", "doc\InjeCtor.Configuration.Samples\InjeCtor.Configuration.Samples.csproj", "{47C7A26F-30C6-42C3-B813-627EB0AC21CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InjeCtor.Configuration.Samples", "doc\InjeCtor.Configuration.Samples\InjeCtor.Configuration.Samples.csproj", "{47C7A26F-30C6-42C3-B813-627EB0AC21CD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspec", "nuspec", "{062AFF40-B239-40DE-AEEA-1DA254710232}"
+	ProjectSection(SolutionItems) = preProject
+		nuspec\InjeCtor.Configuration.nuspec = nuspec\InjeCtor.Configuration.nuspec
+		nuspec\InjeCtor.Core.nuspec = nuspec\InjeCtor.Core.nuspec
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
